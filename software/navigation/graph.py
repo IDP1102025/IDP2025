@@ -82,7 +82,6 @@ def initialise_graph():
     full_graph.add_edge("3","4",100,direction=2)
     full_graph.add_edge("4","B",34,direction=2)
     full_graph.add_edge("B","5",71,direction=2)
-    full_graph.add_edge("B","5",71,direction=2)
     full_graph.add_edge("5","8",78,direction=1)
     full_graph.add_edge("8","D",64,direction=4)
     full_graph.add_edge("D","7",42,direction=4)
