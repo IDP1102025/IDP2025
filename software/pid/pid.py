@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+from machine import Pin, PWM
 import time
 
 #Sensors output:
@@ -10,32 +10,8 @@ import time
 left_sensor_pin = 
 right_sensor_pin = 
 
-GPIO.setmode(GPIO.BCM)
-
-GPIO.setup(left_sensor_pin, GPIO.IN)
-GPIO.setup(right_sensor_pin, GPIO.IN)
-
-#For testing
-
-try: 
-    while True: 
-        left_sensor = GPIO.input(left_sensor_pin)
-        right_sensor = GPIO.input(right_sensor_pin)
-
-        if left_sensor == 0 and right_sensor == 0:
-            print("Straight")
-
-        if left_sensor == 1 and right_sensor == 0:
-            print("Turning Right")
-
-        if left_sensor == 0 and right_sensor == 1:
-            print("Turn Left")
-
-        time.sleep(0.1)
-
-except KeyboardInterrupt: 
-    print("Test over.")
-    GPIO.cleanup()
+left_sensor = Pin(left_sensor_pin, Pin.IN)
+right_sensor = Pin(right_sensor_pin, Pin.IN)
 
 #PID CONTROL
     
@@ -44,9 +20,8 @@ class LineFollower:
         #Pin Assignment
         self.left_sensor_pin = left_sensor_pin
         self.right_sensor_pin = right_sensor_pin
-        self.left_motor_pins = left_motor_pins
-        self.right_motor_pis = right_motor_pins
-
+        self.left_motor_pins = [Pin(pin, Pin.OUT) for pin in left_motor_pins]
+        self.right_motor_pins = [Pin(pin, Pin.OUT) for pin in right_motor_pins]
         #PID Constants
         self.kp = kp
         self.ki = ki
@@ -56,25 +31,19 @@ class LineFollower:
         self.previous_error = 0
         self.integral = 0
 
-        #Setup GPIO inputs
-        GPIO.setmode(GPIO.BCM)
-
-        GPIO.setup(left_sensor_pin, GPIO.IN)
-        GPIO.setup(right_sensor_pin, GPIO.IN)
-        
-        for pin in self.left_motor_pins + self.right_motor_pins:
-            GPIO.setup(pin, GPIO.OUT)
+        left_sensor = Pin(left_sensor_pin, Pin.IN)
+        right_sensor = Pin(right_sensor_pin, Pin.IN)
 
         #Initialise PWM for motors
 
-        self.left_pwm = GPIO.PWM(self.left_motor_pins[0], 100)
-        self.right_pwm = GPIO.PWM(self.right_motor_pin[0], 100)
-        self.left_pwm.start(0)
-        self.right_pwm.start(0)
+        self.left_pwm = PWM(self.left_motor_pins[0])
+        self.right_pwm = PWM(self.right_motor_pins[0])
+        self.left_pwm.freq(1000)
+        self.right_pwm.freq(1000)
     
     def read_sensors(self):
-        left_reading = GPIO.input(self.left_sensor_pin)
-        right_reading = GPIO.input(self.right_sensor_pin)
+        left_reading = self.left_sensor.value()
+        right_reading = self.right_sensor.value()
         return left_reading, right_reading
     
     def calculate_pid(self, current, target):
@@ -94,15 +63,22 @@ class LineFollower:
         left_speed = max(0, min(100, left_speed))
         right_speed = max(0, min(100, right_speed))
 
-        self.left_pwm.ChangeDutyCycle(left_speed)
-        self.right_pwm.ChangeDutyCycle(right_speed)
+        self.left_pwm.duty_u16(left_speed / 100 * 65535)
+        self.right_pwm.duty_u16(right_speed / 100 * 65535)
 
     def follow_line(self, target_position = 0, base_speed = 50):
         while True: 
             left_detect, right_detect = self.read_sensors()
 
-            current_position = 1 if left_detect == 1 else -1 if right_detect == 1 else 0
+            current_position = 0
 
+            if left_detect == 0 and right_detect == 0:
+                current_position = 0
+            elif left_detect == 1 and right_detect == 0:
+                current_position = 0
+            elif left_detect == 0 and right_detect == 1:
+                current_position = -1
+            
             correction = self.calculate_pid(target_position, current_position)
 
             self.adjust_motors(base_speed, correction)
@@ -110,6 +86,5 @@ class LineFollower:
             time.sleep(0.1)
 
     def stop(self):
-        self.left_pwm.stop()
-        self.right_pwm.stop()
-        GPIO.cleanup()
+        self.left_pwm.duty_u16(0)
+        self.right_pwm.duty_u16(0)
