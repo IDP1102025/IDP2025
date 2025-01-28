@@ -1,5 +1,7 @@
 from machine import Pin, PWM
 import time
+from sensors.sensor_manager import LineSensor
+from controllers.motor_driver import DualMotor
 
 #Sensors output:
 #   1 for White
@@ -18,10 +20,11 @@ right_sensor = Pin(right_sensor_pin, Pin.IN)
 class LineFollower: 
     def __init__(self, left_sensor_pin, right_sensor_pin, left_motor_pins, right_motor_pins, kp, ki, kd):
         #Pin Assignment
-        self.left_sensor_pin = left_sensor_pin
-        self.right_sensor_pin = right_sensor_pin
-        self.left_motor_pins = [Pin(pin, Pin.OUT) for pin in left_motor_pins]
-        self.right_motor_pins = [Pin(pin, Pin.OUT) for pin in right_motor_pins]
+        self.right_sensor = LineSensor(right_sensor_pin)
+        self.left_sensor = LineSensor(left_sensor_pin)
+       
+        self.dual_motors = DualMotor(left_motor_pins[0],left_motor_pins[1],right_motor_pins[0],right_motor_pins[1])
+
         #PID Constants
         self.kp = kp
         self.ki = ki
@@ -30,20 +33,10 @@ class LineFollower:
         #PID Variables
         self.previous_error = 0
         self.integral = 0
-
-        left_sensor = Pin(left_sensor_pin, Pin.IN)
-        right_sensor = Pin(right_sensor_pin, Pin.IN)
-
-        #Initialise PWM for motors
-
-        self.left_pwm = PWM(self.left_motor_pins[0])
-        self.right_pwm = PWM(self.right_motor_pins[0])
-        self.left_pwm.freq(1000)
-        self.right_pwm.freq(1000)
     
     def read_sensors(self):
-        left_reading = self.left_sensor.value()
-        right_reading = self.right_sensor.value()
+        left_reading = self.left_sensor.read_sensor()
+        right_reading = self.right_sensor.read_sensor()
         return left_reading, right_reading
     
     def calculate_pid(self, current, target):
@@ -63,8 +56,8 @@ class LineFollower:
         left_speed = max(0, min(100, left_speed))
         right_speed = max(0, min(100, right_speed))
 
-        self.left_pwm.duty_u16(left_speed / 100 * 65535)
-        self.right_pwm.duty_u16(right_speed / 100 * 65535)
+        self.dual_motors.left_pwm.duty_u16(left_speed / 100 * 65535)
+        self.dual_motors.right_pwm.duty_u16(right_speed / 100 * 65535)
 
     def follow_line(self, target_position = 0, base_speed = 50):
         while True: 
@@ -84,7 +77,3 @@ class LineFollower:
             self.adjust_motors(base_speed, correction)
 
             time.sleep(0.1)
-
-    def stop(self):
-        self.left_pwm.duty_u16(0)
-        self.right_pwm.duty_u16(0)
