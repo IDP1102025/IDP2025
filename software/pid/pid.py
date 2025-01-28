@@ -15,18 +15,24 @@ right_sensor_pin =
 left_sensor = Pin(left_sensor_pin, Pin.IN)
 right_sensor = Pin(right_sensor_pin, Pin.IN)
 
+
 #PID CONTROL
+
+#sensor_pins list = [left left, inner left, inner right, right right]
     
 class LineFollower: 
-    def __init__(self, left_sensor_pin, right_sensor_pin, left_motor_pins, right_motor_pins, kp, ki, kd):
+    def __init__(self, sensor_pins, left_motor_pins, right_motor_pins, kp_list, ki, kd):
         #Pin Assignment
-        self.right_sensor = LineSensor(right_sensor_pin)
-        self.left_sensor = LineSensor(left_sensor_pin)
+        self.outer_left_sensor = LineSensor(sensor_pins[0])
+        self.inner_left_sensor = LineSensor(sensor_pins[1])
+        self.inner_right_sensor = LineSensor(sensor_pins[2])
+        self.outer_right_sensor = LineSensor(sensor_pins[3])
        
         self.dual_motors = DualMotor(left_motor_pins[0],left_motor_pins[1],right_motor_pins[0],right_motor_pins[1])
 
         #PID Constants
-        self.kp = kp
+        self.kp_low = kp_list[0]
+        self.kp_high = kp_list[1]
         self.ki = ki
         self.kd = kd
 
@@ -34,12 +40,7 @@ class LineFollower:
         self.previous_error = 0
         self.integral = 0
     
-    def read_sensors(self):
-        left_reading = self.left_sensor.read_sensor()
-        right_reading = self.right_sensor.read_sensor()
-        return left_reading, right_reading
-    
-    def calculate_pid(self, current, target):
+    def calculate_pid(self, current, target, kp):
         error = target - current
         self.integral += error
         derivative = error - self.previous_error
@@ -61,19 +62,34 @@ class LineFollower:
 
     def follow_line(self, target_position = 0, base_speed = 50):
         while True: 
-            left_detect, right_detect = self.read_sensors()
+            outer_left_detect, inner_left_detect = self.outer_left_sensor.read_sensor(), self.inner_left_sensor.read_sensor()
+            inner_right_detect, outer_right_detect = self.inner_right_sensor.read_sensor(), self.outer_right_sensor.read_sensor()
+
+            state_pattern = [outer_left_detect, inner_left_detect, inner_right_detect, outer_right_detect]
 
             current_position = 0
 
-            if left_detect == 0 and right_detect == 0:
+            if state_pattern == [0, 1, 1, 0]:
                 current_position = 0
-            elif left_detect == 1 and right_detect == 0:
-                current_position = 0
-            elif left_detect == 0 and right_detect == 1:
+            elif state_pattern == [0, 0, 1, 1]:
                 current_position = -1
-            
-            correction = self.calculate_pid(target_position, current_position)
-
-            self.adjust_motors(base_speed, correction)
+                kp = self.kp_low
+            elif state_pattern == [1, 1, 0, 0]:
+                current_position = 1
+                kp = self.kp_low
+            elif state_pattern == [0, 0, 0, 1]:
+                current_position = -2
+                kp = self.kp_high
+            elif state_pattern == [1, 0, 0, 0]:
+                current_position = 2
+                kp = self.kp_high
+            elif state_pattern == [0, 0, 0, 0]:
+                current_position = 3
+                
+            if current_position ==  1 or abs(current_position) == 1 or abs(current_position) == 2:
+                correction = self.calculate_pid(target_position, current_position, kp)
+                self.adjust_motors(base_speed, correction)
+            elif current_position == 3: 
+                self.dual_motors.move_backward(50)
 
             time.sleep(0.1)
