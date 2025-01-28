@@ -1,7 +1,5 @@
 from machine import Pin, time_pulse_us
 
-
-
 import time
 
 #Initialising Sensors
@@ -42,7 +40,7 @@ class UltraSound:
         time.sleep_us(2)
         self.trigger.low()
 
-        duration = time_pulse_us(echo, 1, 30000)
+        duration = time_pulse_us(self.echo, 1, 30000)
 
         distance = (duration / 2) / 29.1
 
