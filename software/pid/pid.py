@@ -6,26 +6,17 @@ from sensors.sensor_manager import LineSensor
 #   1 for White
 #   0 for Black
 
-#Setting up GPIO pins
-
-left_sensor_pin = 
-right_sensor_pin = 
-
-left_sensor = Pin(left_sensor_pin, Pin.IN)
-right_sensor = Pin(right_sensor_pin, Pin.IN)
-
-
 #PID CONTROL
 
 #sensor_pins list = [left left, inner left, inner right, right right]
     
 class LineFollower: 
-    def __init__(self, sensor_pins, kp_list, ki, kd):
+    def __init__(self, sensor_pins, outer_left_sensor, inner_left_sensor, inner_right_sensor, outer_right_sensor, kp_list, ki, kd):
         #Pin Assignment
-        self.outer_left_sensor = LineSensor(sensor_pins[0])
-        self.inner_left_sensor = LineSensor(sensor_pins[1])
-        self.inner_right_sensor = LineSensor(sensor_pins[2])
-        self.outer_right_sensor = LineSensor(sensor_pins[3])
+        self.outer_left_sensor = outer_left_sensor
+        self.inner_left_sensor = inner_left_sensor
+        self.inner_right_sensor = inner_right_sensor
+        self.outer_right_sensor = outer_right_sensor
 
         #PID Constants
         self.kp_low = kp_list[0]
