@@ -1,4 +1,3 @@
-from machine import Pin
 import time
 from sensors.sensor_manager import LineSensor
 
@@ -11,7 +10,7 @@ from sensors.sensor_manager import LineSensor
 #sensor_pins list = [left left, inner left, inner right, right right]
     
 class LineFollower: 
-    def __init__(self, sensor_pins, outer_left_sensor, inner_left_sensor, inner_right_sensor, outer_right_sensor, kp_list, ki, kd):
+    def __init__(self, outer_left_sensor, inner_left_sensor, inner_right_sensor, outer_right_sensor, kp_high, kp_low, ki, kd):
         #Pin Assignment
         self.outer_left_sensor = outer_left_sensor
         self.inner_left_sensor = inner_left_sensor
@@ -19,8 +18,8 @@ class LineFollower:
         self.outer_right_sensor = outer_right_sensor
 
         #PID Constants
-        self.kp_low = kp_list[0]
-        self.kp_high = kp_list[1]
+        self.kp_low = kp_low
+        self.kp_high = kp_high
         self.ki = ki
         self.kd = kd
 
