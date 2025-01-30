@@ -3,7 +3,6 @@ TODO
 •⁠  ⁠⁠Add linear actuator and servo class (DONE)
 •⁠  ⁠⁠Add LED, line sensor class (DONE)
 •⁠  ⁠⁠Add LED flashing logic (should flash ONLY during moving on route + loading/unloading)
-•⁠  ⁠⁠Add start/stop button class
 •⁠  ⁠⁠Add Tiny code reader class(DONE)
 •⁠  Add parsing logic from message 
 •⁠  ⁠⁠Add main Robot class 
@@ -20,6 +19,17 @@ TODO
 		- Current time elapsed (int) (if the time readches a certain time, eg 4 min 45 secs, return to base)
 		Possible additions:
 		- How many junctions need to be passed before reaching next node in the route (to speed up pathfinding)
+
+TODO:
+- Navigation logic, should return a queue of tuples containing directions and junctions to travel
+- Robot class
+- Robot methods 
+	- Start/stop
+	- Queue system for tasks
+	- Parsing direction list
+- Instructions for each target node/depot/start 
+- Turning logic 
+
 
 Later 
 •⁠  ⁠⁠Add task logic to travel from node to node (include the number of junctions passed per node to node traversal)
