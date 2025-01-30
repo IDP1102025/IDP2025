@@ -1,0 +1,13 @@
+from machine import Pin
+import time
+
+# Try both configurations to see which one works
+sensor_pin = Pin(14, Pin.IN, Pin.PULL_UP)  # Try with Pin.PULL_UP
+#sensor_pin = Pin(14, Pin.IN, Pin.PULL_DOWN)  # Try with Pin.PULL_DOWN if the first doesn't work
+
+# Test loop
+while True:
+    sensor_value = sensor_pin.value()  # Read the sensor state
+    print("Sensor value:", sensor_value)  # Print the value to check
+    
+    time.sleep(1)  # Sleep for 1 second between readings

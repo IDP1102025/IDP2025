@@ -86,7 +86,6 @@ class LineFollower:
                 self.adjust_motors(correction, base_speed)
             elif current_position == 3: 
                 self.recover_off_the_line()
-                
 
             time.sleep(0.1)
 
