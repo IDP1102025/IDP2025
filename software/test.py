@@ -9,7 +9,7 @@ from navigation.corners import CornerIdentification
 from collections import deque
 from time import time , sleep
 
-class Robot :
+class TestRobot :
     def __init__(self):
         '''
         Inititalise all sensors, motors, linefollower class done
