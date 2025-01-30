@@ -24,24 +24,46 @@ class Graph:
             else:
                 raise ValueError(f"Unknown node type: {node_type}")
 
-    def add_edge(self, from_node, to_node, cost,direction,junction=1):
-        """
-        Adds a weighted edge between two nodes.
+    # A simple dictionary mapping each forward direction to its reverse
+    
 
-        Args:
-            from_node (str): Name of the starting node.
-            to_node (str): Name of the ending node.
-            cost (int): Weight or cost of the edge.
-            direction (int)
-            junction (int)
+    def add_edge(self, from_node, to_node, cost, direction, junction=1):
         """
+        Adds a weighted edge between two nodes, storing the 'direction' 
+        for forward and 'reverse_direction' for the reverse edge.
+        """
+        REVERSE_DIRECTION = {
+        1: 3,
+        2: 4,
+        3: 1,
+        4: 2
+        }
+        
         if from_node not in self.nodes:
             self.add_node(from_node)
         if to_node not in self.nodes:
             self.add_node(to_node)
 
-        self.nodes[from_node].add_neighbor(self.nodes[to_node], cost,direction,junction)
-        self.nodes[to_node].add_neighbor(self.nodes[from_node], cost,(direction +2) % 4,junction)  # Bidirectional edge,reverse direction
+        from_node_obj = self.nodes[from_node]
+        to_node_obj   = self.nodes[to_node]
+
+        # Forward edge: store the original direction
+        from_node_obj.add_neighbor(
+            to_node_obj,
+            cost,
+            direction,
+            junction
+        )
+
+        # Reverse edge: use the custom dictionary to get the reverse direction
+        reverse_dir = REVERSE_DIRECTION[direction]
+        to_node_obj.add_neighbor(
+            from_node_obj,
+            cost,
+            reverse_dir,
+            junction
+        )
+
 
     def get_node(self, name):
         """Returns the node object for the given name."""
@@ -93,21 +115,21 @@ def initialise_graph():
 
     # adding secondary edges
 
-    full_graph.add_edge("Start Node","Depot 2",102,direction=4,junction=2)
-    full_graph.add_edge("A","Depot 1",137,direction=2)
-    full_graph.add_edge("Depot 1","Depot 2",207,direction=4,junction=3)
+    # full_graph.add_edge("Start Node","Depot 2",102,direction=4,junction=2)
+    # full_graph.add_edge("A","Depot 1",137,direction=2)
+    # full_graph.add_edge("Depot 1","Depot 2",207,direction=4,junction=3)
 
-    full_graph.add_edge("Depot 2","6",161,direction=1,junction=2)
-    full_graph.add_edge("Depot 1","8",161,direction=1,junction=2)
-    full_graph.add_edge("4","7",76,direction=1,junction=2)
+    # full_graph.add_edge("Depot 2","6",161,direction=1,junction=2)
+    # full_graph.add_edge("Depot 1","8",161,direction=1,junction=2)
+    # full_graph.add_edge("4","7",76,direction=1,junction=2)
 
-    full_graph.add_edge("3","B",134,direction=2,junction=2)
-    full_graph.add_edge("4","5",105,direction=2,junction=2)
-    full_graph.add_edge("3","5",207,direction=2,junction=3)
+    # full_graph.add_edge("3","B",134,direction=2,junction=2)
+    # full_graph.add_edge("4","5",105,direction=2,junction=2)
+    # full_graph.add_edge("3","5",207,direction=2,junction=3)
 
-    full_graph.add_edge("6","8",207,direction=2,junction=3)
-    full_graph.add_edge("6","D",207,direction=2,junction=3)
-    full_graph.add_edge("7","8",106,direction=2,junction=2)
+    # full_graph.add_edge("6","8",207,direction=2,junction=3)
+    # full_graph.add_edge("6","D",207,direction=2,junction=3)
+    # full_graph.add_edge("7","8",106,direction=2,junction=2)
     
     return(full_graph)
 

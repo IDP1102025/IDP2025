@@ -20,13 +20,11 @@ class Node:
         return f"Node({self.name}, Type: {self.node_type}, Neighbors: {neighbor_names})"
 
     def add_neighbor(self, neighbor, cost, direction, junction):
-        """
-        Adds a neighboring node with a specified cost,direction and number of junctions to cross to reach there.
-        direction = number from 1 to 4 (N E S W)
-        junction = number of junctions between the two nodes
-        """
-        self.neighbors[neighbor] = (cost,direction,junction)
-
+        self.neighbors[neighbor] = {
+            "cost": cost,
+            "direction": direction,
+            "junction": junction
+        }
     def execute_action(self):
         """Executes the action associated with this node."""
         if self.action:
