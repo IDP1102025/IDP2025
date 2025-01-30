@@ -84,7 +84,18 @@ class Robot :
 
         raise NotImplementedError
 
-        
+    def depot(self):
+        raise NotImplementedError
+    
+    def turn_left(self):
+        raise NotImplementedError
+    
+    def turn_right(self):
+        raise NotImplementedError
 
-
+    def reverse(self):
+        raise NotImplementedError
+    
+    def stop(self):
+        raise NotImplementedError
 
