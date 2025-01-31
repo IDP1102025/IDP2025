@@ -74,6 +74,7 @@ class TestRobot :
     def robot_standby(self):
         while True:
             if self.button.value() == 1:
+                time.sleep(0.3)
                 self.start()
                 break
     
@@ -137,4 +138,4 @@ class TestRobot :
     
     def stop(self):
         raise NotImplementedError
-
+    
