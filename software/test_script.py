@@ -1,9 +1,8 @@
 from robot import Robot
+from time import time
 
 
 def test_start(wilsonbot):
-    print("STARTING")
-    
     # Test the robot to go to the start node
     # Start the robot on standby mode
     # Will start when button is pressed
@@ -17,8 +16,6 @@ def test_line_following(wilsonbot):
     wilsonbot.move(2, 30)
 
 def test_turning(wilsonbot):
-    print("STARTING")
-    
     # Test 90 degree turn
     wilsonbot.face_direction(2)
 
@@ -32,8 +29,6 @@ def test_turning(wilsonbot):
     wilsonbot.face_direction(1)
 
 def test_navigation(wilsonbot):
-    print("STARTING")
-
     # Go to the first depot
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
 
@@ -44,12 +39,15 @@ def test_navigation(wilsonbot):
     wilsonbot.return_to_start()
 
 if __name__ == "__main__":
+    print("Starting...")
+
     # Init robot 
     wilsonbot = Robot()
+
+    t1 = time()
     test_start(wilsonbot)
 
     test_line_following(wilsonbot)
-    
     #test_turning(wilsonbot)
     #test_navigation(wilsonbot)
-    print("test complete")
+    print(f"test completed in {t1 - time()}")
