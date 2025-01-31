@@ -1,5 +1,6 @@
 from graph import Graph, initialise_graph
 import heapq
+from collections import deque
 class Navigation:
     def __init__(self):
         self.graph = initialise_graph()
@@ -60,6 +61,9 @@ class Navigation:
         node_path.reverse()
         dir_path.reverse()
 
+        # Combine adjacent nodes that have the same direction of travel
+        node_path, dir_path = combine_paths(node_path, dir_path)
+
         return (distances[goal_node], node_path, dir_path)
 
 
@@ -85,16 +89,40 @@ class Navigation:
         raise NotImplementedError
     
 
+def combine_paths(node_path, direction_path):
+    if not node_path or not direction_path:
+        return deque(), deque()
+
+    merged_nodes = []  # Use list instead of deque
+    merged_directions = []
+    
+    prev_direction, prev_junctions = direction_path[0]
+    current_nodes = [node_path[0]]
+
+    for i in range(1, len(direction_path)):
+        direction, junctions = direction_path[i]
+        if direction == prev_direction:
+            prev_junctions += junctions  # Merge junction counts
+            current_nodes.append(node_path[i])  # Include node
+        else:
+            merged_directions.append((prev_direction, prev_junctions))
+            merged_nodes.append(current_nodes[-1])  # Append last node of merged group
+
+            # Reset
+            prev_direction, prev_junctions = direction, junctions
+            current_nodes = [node_path[i]]
+
+    # Append last segment
+    merged_directions.append((prev_direction, prev_junctions))
+    merged_nodes.append(current_nodes[-1])
+
+    # Convert to deque at the end (O(n))
+    return deque(merged_nodes), deque(merged_directions)
+
 if __name__ == "__main__":
     nav = Navigation()
     print(nav.dijkstra_with_directions("Start Node", "Depot 1"))
     print(nav.dijkstra_with_directions("B", "Start Node"))
     print(nav.dijkstra_with_directions("Depot 2", "D"))
 
-
-        
-
-        
-
-
-
+# Helper function to combine adjacent nodes that have the same direction of travel
