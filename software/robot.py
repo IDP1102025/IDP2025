@@ -109,8 +109,12 @@ class Robot :
             self.dual_motors.stop()
 
     def return_to_start(self):
-        raise NotImplementedError
-    
+        '''
+        Return automatically to the start node from the current node
+        '''
+        
+        self.goto_node(self.navigation.graph.get_node("Start"))
+
     def goto_node(self,target_node):
         '''
         Args:
@@ -139,6 +143,9 @@ class Robot :
         
         elif self.current_node.node_type == "goal":
             self.target_node()
+        
+        # Update status back to idle
+        self.current_task = "idle"
     
     def execute_pathing(self):
         # Execute the path to the target node usings the robot's inbuilt queue
