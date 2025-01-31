@@ -8,6 +8,9 @@ from sensors.code_reader import CodeReader
 from navigation.corners import CornerIdentification
 from collections import deque
 from time import time , sleep
+from navigation.navigation import Navigation
+from navigation.graph import Graph
+from navigation.node import Node
 
 class Robot :
     def __init__(self):
@@ -57,19 +60,36 @@ class Robot :
         self.line_follower = LineFollower(None, self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor,"""add kp,ki ,kd""")
 
         # Init navigaton
-        # TODO
+        self.navigation = Navigation()
 
         # Robot variables and states
-        self.current_task = "idle"
         self.direction_facing = 1
-        self.current_position = "Start"
-        self.goal_position = "Depot 1"
-        self.next_target_position = "Depot 1"
+        self.current_node = self.navigation.graph.get_node("Start") # Inititalise at the start node
         self.time_elapsed = 0
-        self.current_speed = 0
+        self.base_speed = 30
         self.boxes_in_depot = {"Depot 1":4, "Depot 2":4}
-        self.depot_loop_running = False
-        self.robot_path = [] # deque of tuples containing directions of travel and number of nodes to pass (1,1)
+        self.robot_node_path = deque([]) # Deque of node objects
+        self.robot_direction_path = deque([]) # Deque of directions of travel and number of junctions to travel in that direction
+        
+
+        # Robot states
+        self._current_task = "idle"  # Use an underscore to define a private variable
+
+    @property
+    def current_task(self):
+        return self._current_task
+
+    @current_task.setter
+    def current_task(self, task):
+        """Set the robot's current task and update the LED accordingly."""
+        self._current_task = task
+
+        # LED ON if task is not idle, else OFF
+        if task != "idle":
+            self.led.value(1)  # Turn LED ON
+        else:
+            self.led.value(0)  # Turn LED OFF
+
 
     def robot_standby(self):
         while True:
@@ -79,19 +99,61 @@ class Robot :
     
     def start(self):
         junction_status = self.corner_identification.find_turn()
-        while junction_status != True: 
-            self.dual_motors.move_forward(30, 30)
-        if junction_status == True: 
+        timeout = time() + 5  # 5-second timeout to prevent infinite loop
+        while junction_status != True and time() < timeout: 
+            self.dual_motors.move_forward(30, 30) # Start moving forward to find the first junction
+
+        if junction_status: # Once junction is found, proceed towards the start node
             self.move(1, 30)
-    
+        else:
+            self.dual_motors.stop()
+
     def return_to_start(self):
         raise NotImplementedError
     
     def goto_node(self,target_node):
-        raise NotImplementedError
+        '''
+        Args:
+            target_node (Node): Node object to navigate to
+        '''
+        # Performs navigation and pathing to a specific node from the current node
+        # Update status
+        self.current_task = "moving"
+    
+        # Clear current path of node objects
+        self.robot_node_path.clear()
 
-    def depot(self):
-        raise NotImplementedError
+        # Clear current direction path
+        self.robot_direction_path.clear()
+
+        # Get the path to the target node
+        # Algo function returns compressed paths already
+        distance_to_node, self.robot_node_path, self.robot_direction_path = self.navigation.dijkstra_with_directions(self.current_node, target_node) 
+
+        # Execute path
+        self.execute_pathing()
+
+        # Execute action at current node, either depot or goal
+        if self.current_node.node_type == "depot":
+            self.depot()
+        
+        elif self.current_node.node_type == "goal":
+            self.target_node()
+    
+    def execute_pathing(self):
+        # Execute the path to the target node usings the robot's inbuilt queue
+        self.current_node = self.robot_node_path.popleft() # first node is the node we are starting at so pop it off first
+        while self.robot_direction_path: # While direction queue is not empty
+            next_node = self.robot_node_path.popleft()
+            next_direction , number_of_junctions_to_pass = self.robot_direction_path.popleft()
+
+            # Face the direction of the next node
+            self.face_direction(next_direction)
+            
+            # Move to the next node, travelling for n junctions
+            self.move(number_of_junctions_to_pass,base_speed=self.base_speed)
+            self.current_node = next_node # Once new node is reached, update current node
+        
     
     def face_direction(self, desired_direction):
         net_turn = desired_direction - self.direction_facing
@@ -120,21 +182,45 @@ class Robot :
                         streets_passed += 1
                     self.dual_motors.turn_left(30)
                 self.dual_motors.stop()
+
+            # set new direction
+            self.direction_facing = desired_direction
+        
     
     def move(self, number_of_junctions, base_speed):
-        junctions_passed = 0
-        self.dual_motors.move_forward(base_speed, base_speed)
-        while True: 
-            while junctions_passed < number_of_junctions:
-                left_speed, right_speed, direction = self.line_follower.follow_line(0, base_speed)
-                self.dual_motors.move_forward(left_speed, right_speed)
-                if self.corner_identification.find_turn() == True: 
-                    junctions_passed += 1
-            self.dual_motors.stop()
+        detected_junctions = 0
+        while detected_junctions < number_of_junctions:
+            left_speed, right_speed, direction = self.line_follower.follow_line(0, base_speed)
+            self.dual_motors.move_forward(left_speed, right_speed)
+
+            if self.corner_identification.find_turn():
+                sleep(0.1)  # Debounce delay
+                if self.corner_identification.find_turn():  # Confirm junction
+                    detected_junctions += 1
+
+        self.dual_motors.stop()
+
+
 
     def reverse(self):
         raise NotImplementedError
     
     def stop(self):
+        raise NotImplementedError
+
+    # Block to perform at depot nodes
+    def depot(self):
+        # Face the direction of the depot (south)
+        self.face_direction(3) 
+
+        # TODO: Implement depot logic
+    
+    # Block to perform at goal node
+    def target_node(self):
+        raise NotImplementedError
+    
+
+    def begin_test(self):
+        # command to test the robot by moving to a specific node and then returning to the start
         raise NotImplementedError
 

@@ -5,13 +5,10 @@ class Navigation:
     def __init__(self):
         self.graph = initialise_graph()
 
-    def dijkstra_with_directions(self, start_name, goal_name):
+    def dijkstra_with_directions(self, start_node, goal_node):
         """Return (distance, node_path, dir_path)."""
         
-        start_node = self.graph.get_node(start_name)
-        goal_node  = self.graph.get_node(goal_name)
-        
-        # 1) Distances dict from Node obj -> cost
+        # 1) Distances dict from Node obj -> c ost
         distances = {node_obj: float('inf') for node_obj in self.graph.nodes.values()}
         distances[start_node] = 0
 
