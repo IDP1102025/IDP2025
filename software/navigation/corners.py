@@ -4,14 +4,15 @@ from sensors.sensor_manager import LineSensor
 class CornerIdentification: 
     def __init__(self, outer_left_sensor, inner_left_sensor, inner_right_sensor, outer_right_sensor):
         #Pin Assignment
-        self.outer_left_sensor = outer_left_sensor
-        self.inner_left_sensor = inner_left_sensor
-        self.inner_right_sensor = inner_right_sensor
-        self.outer_right_sensor = outer_right_sensor
+        self.outer_left_sensor = LineSensor(outer_left_sensor)
+        self.inner_left_sensor = LineSensor(inner_left_sensor)
+        self.inner_right_sensor = LineSensor(inner_right_sensor)
+        self.outer_right_sensor = LineSensor(outer_right_sensor)
 
     def find_turn(self):
         while True:
-        
+            
+            # how many times the sensors must detect a node consecutively before confirming its presence
             detection_factor = 0
             
             while detection_factor < 3: 
