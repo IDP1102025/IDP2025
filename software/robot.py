@@ -205,25 +205,37 @@ class Robot :
                 if self.corner_identification.find_turn():  # Confirm junction
                     detected_junctions += 1
 
-        self.dual_motors.stop()
-
-
+        self.stop()
 
     def reverse(self):
-        raise NotImplementedError
+        self.dual_motors.move_backward(20)
     
     def stop(self):
-        raise NotImplementedError
+        self.dual_motors.stop()
 
     # Block to perform at depot nodes
     def depot(self):
         # Face the direction of the depot (south)
-        self.face_direction(3) 
-
+        self.face_direction(3)
+        self.qr = CodeReader()
         # TODO: Implement depot logic
+        while self.qr.poll_for_code(1) == None: 
+            self.dual_motors.move_forward(10, 10)
+        self.stop()
+        if type(self.qr.poll_for_code(1)) == str:
+            # destination = letter from message returned by poll_for_code
+            # obtain route to the destination
+            # pick up box
+            # move backward to junction
+            raise NotImplementedError
+
     
     # Block to perform at goal node
     def target_node(self):
+        # face direction (hard code these in for each destination)
+        # move forward (set distance)
+        # drop box
+        # back up to return to junction
         raise NotImplementedError
     
 
