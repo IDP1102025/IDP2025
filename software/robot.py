@@ -56,7 +56,10 @@ class Robot :
         self.corner_identification = CornerIdentification(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor)
 
         # Init line follower
-        self.line_follower = LineFollower(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor,1.5,1,0.1,0.1)
+        self.line_follower = LineFollower(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor,
+                                          kp_high=1.5,
+                                          kp_low=1,
+                                          ki=0,kd=0)
 
         # Init navigaton
         self.navigation = Navigation()
@@ -64,11 +67,12 @@ class Robot :
         # Robot variables and states
         self.direction_facing = 1
         self.current_node = self.navigation.graph.get_node("Start") # Inititalise at the start node
-        self.base_speed = 100
         self.boxes_in_depot = {"Depot 1":4, "Depot 2":4}
         self.robot_node_path = deque([],12) # Deque of node objects
         self.robot_direction_path = deque([],12) # Deque of directions of travel and number of junctions to travel in that direction
         
+        # Inititalise robot speeds
+        self.right_speed , self.left_speed = 75, 75
 
         # Robot states
         self._current_task = "idle"  # Use an underscore to define a private variable
@@ -198,8 +202,8 @@ class Robot :
             # set new direction
             self.direction_facing = desired_direction
         
-    
-    def move(self, number_of_junctions, base_speed):
+    # Logic done just change line follower
+    def move(self, number_of_junctions):
         print("moving")
         detected_junctions = 0
         
@@ -207,25 +211,22 @@ class Robot :
             print(f"Current junction count: {detected_junctions}")
 
             # -- 1) Get next step's speeds from your line follower
-            left_speed, right_speed = self.line_follower.follow_line_step(0, base_speed)
+            self.left_speed, self.right_speed = self.line_follower.follow_line_step(0, self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
 
             # -- 2) Drive motors with these speeds
-            print(f"[DEBUG] Move() => Left Speed: {left_speed}, Right Speed: {right_speed}")
-            self.dual_motors.move_forward(left_speed, right_speed)
+            print(f"[DEBUG] Move() => Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
+            self.dual_motors.move_forward(self.left_speed, self.right_speed)
 
-            # -- 3) Check if we found a new junction
-            #if self.corner_identification.find_turn():
-              #  time.sleep(0.1)  # small debounce
-              #  if self.corner_identification.find_turn():  # confirm the junction
-             #       detected_junctions += 1
+            #-- 3) Check if we found a new junction
+            if self.corner_identification.find_turn():
+               time.sleep(0.1)  # small debounce
+               if self.corner_identification.find_turn():  # confirm the junction
+                   detected_junctions += 1
 
             sleep(0.05)  # short delay to avoid hammering the loop too fast
             print("running")
         self.dual_motors.stop()
         print("robot stopped")
-
-
-
 
     def reverse(self):
         self.dual_motors.move_backward(20)
@@ -238,6 +239,7 @@ class Robot :
         # Face the direction of the depot (south)
         self.face_direction(3)
         self.qr = CodeReader()
+        
         # TODO: Implement depot logic
         pickups_1 = 0
         pickups_2 = 0
