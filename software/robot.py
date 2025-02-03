@@ -207,7 +207,6 @@ class Robot :
                 sleep(0.1)  # Debounce delay
                 if self.corner_identification.find_turn():  # Confirm junction
                     detected_junctions += 1
-
         self.stop()
 
     def reverse(self):

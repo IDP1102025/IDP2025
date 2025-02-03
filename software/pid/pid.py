@@ -54,7 +54,6 @@ class LineFollower:
         return (left_speed, right_speed, 0)
 
     def follow_line(self, target_position = 0, base_speed = 50):
-        while True: 
             outer_left_detect, inner_left_detect = self.outer_left_sensor.read_sensor(), self.inner_left_sensor.read_sensor()
             inner_right_detect, outer_right_detect = self.inner_right_sensor.read_sensor(), self.outer_right_sensor.read_sensor()
 
@@ -64,10 +63,7 @@ class LineFollower:
 
             if state_pattern == [0, 1, 1, 0]:
                 current_position = 0
-                self.error_loop += 1
             else:
-                self.error_loop = 0
-
                 if state_pattern == [0, 0, 1, 1]:
                     current_position = -1
                     kp = self.kp_low
@@ -84,17 +80,17 @@ class LineFollower:
                     current_position = 3
                 
             # this code returns left_speed, right_speed, and direction = 0 unless the robot strays from the line, in which it returns backwards speed and direction = 1
-            if self.error_loop == 10 and abs(current_position) == 0:
-                self.adjust_motors(0, base_speed*1.5)
+            if abs(current_position) == 0:
+                return self.adjust_motors(0, base_speed*1.5)
             if abs(current_position) == 1 or abs(current_position) == 2:
                 correction = self.calculate_pid(current_position, target_position, kp)
-                self.adjust_motors(correction, base_speed)
+                return self.adjust_motors(correction, base_speed)
             elif current_position == 3: 
-                self.recover_off_the_line()
+                return self.recover_off_the_line()
 
             time.sleep(0.1)
 
     def recover_off_the_line(self):
         backwards_speed = 20
         # speed and direction - returns values, does not change motor speed directly
-        return (backwards_speed, 1)
+        return (backwards_speed, backwards_speed, 1)
