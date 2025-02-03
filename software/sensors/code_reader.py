@@ -1,6 +1,6 @@
 import struct
 from time import sleep,time
-import machine
+from machine import Pin
 
 
 class CodeReader:

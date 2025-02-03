@@ -29,6 +29,7 @@ class CrashSensor:
 
 #Distance Sensor
 class UltraSound: 
+    #trigger pin is the emitter of the wave, while the echo pin recieves it
     def __init__(self, trigger_pin, echo_pin):
         self.trigger = Pin(trigger_pin, Pin.OUT)
         self.echo = Pin(echo_pin, Pin.IN, Pin.PULL_DOWN)
