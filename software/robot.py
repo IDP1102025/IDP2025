@@ -102,11 +102,11 @@ class Robot :
         timeout = time() + 5  # 5-second timeout to prevent infinite loop
         while junction_status != True and time() < timeout: 
             self.dual_motors.move_forward(30, 30) # Start moving forward to find the first junction
-
-        if junction_status: # Once junction is found, proceed towards the start node
+        if junction_status != True: # Once junction is found, proceed towards the start node
             self.move(1, 30)
         else:
             self.dual_motors.stop()
+            return "Start Node Reached"
 
     def return_to_start(self):
         '''
