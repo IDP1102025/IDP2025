@@ -104,11 +104,11 @@ class Robot :
         timeout = time() + 5  # 5-second timeout to prevent infinite loop
         while junction_status != True and time() < timeout: 
             self.dual_motors.move_forward(30, 30) # Start moving forward to find the first junction
-
-        if junction_status: # Once junction is found, proceed towards the start node
+        if junction_status != True: # Once junction is found, proceed towards the start node
             self.move(1, 30)
         else:
             self.dual_motors.stop()
+            return "Start Node Reached"
 
     def return_to_start(self):
         '''
@@ -116,6 +116,9 @@ class Robot :
         '''
         
         self.goto_node(self.navigation.graph.get_node("Start"))
+        self.face_direction(3)
+        self.dual_motors.move_forward(30, 30)
+        # if distance to wall reachers a certain value, stop and end program
 
     def goto_node(self,target_node):
         '''
@@ -225,20 +228,50 @@ class Robot :
 
 
     def reverse(self):
-        raise NotImplementedError
+        self.dual_motors.move_backward(20)
     
     def stop(self):
-        raise NotImplementedError
+        self.dual_motors.stop()
 
     # Block to perform at depot nodes
     def depot(self):
         # Face the direction of the depot (south)
-        self.face_direction(3) 
-
+        self.face_direction(3)
+        self.qr = CodeReader()
         # TODO: Implement depot logic
+        pickups_1 = 0
+        pickups_2 = 0
+        timeout = time() + 10
+        while self.qr.poll_for_code(1) == None and time() < timeout: 
+            self.dual_motors.move_forward(10, 10)
+        self.stop()
+        if time() > timeout:
+            # depot is empty (needs to be calibrated)
+            # go to other depot
+        if type(self.qr.poll_for_code(1)) == str:
+            # destination = letter from message returned by poll_for_code
+            # obtain route to the destination
+            # pick up box
+            # move backward to junction
+            # add 1 to pickups_1
+            # if pickups_1 == 4, then go to other depot after operation
+            # if pickups_2 == 4, go to start
+            raise NotImplementedError
+
     
     # Block to perform at goal node
     def target_node(self):
+        # if deposit location
+        # face direction (hard code these in for each destination)
+        # move forward (set distance)
+        # drop box
+        # back up to return to junction
+
+        # elif depot
+        # call depot
+
+        # elif start node
+        # call depot
         raise NotImplementedError
     
 

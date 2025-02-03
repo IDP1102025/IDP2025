@@ -1,6 +1,4 @@
 from robot import Robot
-from time import time
-
 
 def test_start(wilsonbot):
     # Test the robot to go to the start node
@@ -13,7 +11,7 @@ def test_start(wilsonbot):
 def test_line_following(wilsonbot):
 
     # Test line following by moving along the line for 2 junctions
-    wilsonbot.move(2, 30)
+    wilsonbot.move(2, wilsonbot.base_speed)
 
 def test_turning(wilsonbot):
     # Test 90 degree turn
@@ -29,24 +27,26 @@ def test_turning(wilsonbot):
     wilsonbot.face_direction(1)
 
 def test_navigation(wilsonbot):
+    print("STARTING")
+
     # Go to the first depot
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
 
     # Go to the 2nd depot
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 2"))
-    
     # Return to the start node
     wilsonbot.return_to_start()
 
 if __name__ == "__main__":
-    print("Starting...")
 
-    # Init robot 
+    # Init robot
     wilsonbot = Robot()
-    print(wilsonbot.inner_right_sensor)
+    wilsonbot.stop()
     #test_start(wilsonbot)
-
+    print(wilsonbot.inner_right_sensor)
     test_line_following(wilsonbot)
+    
+    
     #test_turning(wilsonbot)
     #test_navigation(wilsonbot)
-    print(f"test completed in {t1 - time()}")
+    print("test complete")
