@@ -58,15 +58,16 @@ class DualMotor:
         self.right_pwm.duty_u16(right_duty)
 
 # Example usage:
-# motor = DualMotor(left_dir_pin=6, left_pwm_pin=7, right_dir_pin=5, right_pwm_pin=4) # Initialize motor driver
+#motor = DualMotor(left_dir_pin=4, left_pwm_pin=5, right_dir_pin=7, right_pwm_pin=6) # Initialize motor driver
 
-# motor.move_forward(50)  # Move forward at 50% speed
+#motor.move_forward(100,100)  # Move forward at 50% speed
 # sleep(2)  # Wait for 2 seconds
 # motor.turn_left(30)  # Turn left at 30% speed
 # sleep(1)  # Wait for 1 second
 # motor.turn_right(30)  # Turn right at 30% speed
 # sleep(1)  # Wait for 1 second
 # motor.move_backward(50)  # Move backward at 70% speed
-# sleep(2)  # Wait for 2 seconds
-# motor.stop()  # Stop both motors
+#sleep(2)  # Wait for 2 seconds
+#motor.stop()  # Stop both motors
+
 

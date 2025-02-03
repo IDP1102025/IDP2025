@@ -41,7 +41,8 @@ def test_navigation(wilsonbot):
 if __name__ == "__main__":
     # Init robot 
     wilsonbot = Robot()
-    test_start(wilsonbot)
+    print(wilsonbot.inner_right_sensor)
+    #test_start(wilsonbot)
 
     test_line_following(wilsonbot)
     
