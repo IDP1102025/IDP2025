@@ -1,7 +1,7 @@
 from machine import Pin, PWM
 from controllers.motor_driver import DualMotor
 from controllers.linear_actuator_driver import LinearActuatorDriver
-from pid.pid import LineFollower
+from pid.pid import NotPidFollower
 from sensors.sensor_manager import LineSensor, CrashSensor, UltraSound
 from sensors.code_reader import CodeReader
 from navigation.corners import CornerIdentification
@@ -10,6 +10,7 @@ from time import time , sleep
 from navigation.navigation import Navigation
 from navigation.graph import Graph
 from navigation.node import Node
+
 
 class Robot :
     def __init__(self):
@@ -56,10 +57,7 @@ class Robot :
         self.corner_identification = CornerIdentification(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor)
 
         # Init line follower
-        self.line_follower = LineFollower(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor,
-                                          kp_high=1.5,
-                                          kp_low=1,
-                                          ki=0,kd=0)
+        self.line_follower = NotPidFollower(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor)
 
         # Init navigaton
         self.navigation = Navigation()
@@ -202,31 +200,30 @@ class Robot :
             # set new direction
             self.direction_facing = desired_direction
         
-    # Logic done just change line follower
     def move(self, number_of_junctions):
-        print("moving")
+        
+       
         detected_junctions = 0
         
         while detected_junctions < number_of_junctions:
+            print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
             print(f"Current junction count: {detected_junctions}")
-
             # -- 1) Get next step's speeds from your line follower
-            self.left_speed, self.right_speed = self.line_follower.follow_line_step(0, self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
-
+            self.left_speed, self.right_speed = self.line_follower.follow_line_step(self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
             # -- 2) Drive motors with these speeds
-            print(f"[DEBUG] Move() => Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
+            
             self.dual_motors.move_forward(self.left_speed, self.right_speed)
-
+            
             #-- 3) Check if we found a new junction
             if self.corner_identification.find_turn():
-               time.sleep(0.1)  # small debounce
-               if self.corner_identification.find_turn():  # confirm the junction
-                   detected_junctions += 1
+                #sleep(0.1)  # small debounce
+               
+                if self.corner_identification.find_turn():  # confirm the junction
+                    detected_junctions += 1
 
-            sleep(0.05)  # short delay to avoid hammering the loop too fast
-            print("running")
+            #sleep(0.05)  # short delay to avoid hammering the loop too fast
         self.dual_motors.stop()
-        print("robot stopped")
+        
 
     def reverse(self):
         self.dual_motors.move_backward(20)
@@ -250,6 +247,7 @@ class Robot :
         if time() > timeout:
             # depot is empty (needs to be calibrated)
             # go to other depot
+            raise NotImplementedError
         if type(self.qr.poll_for_code(1)) == str:
             # destination = letter from message returned by poll_for_code
             # obtain route to the destination
@@ -280,5 +278,6 @@ class Robot :
     def begin_test(self):
         # command to test the robot by moving to a specific node and then returning to the start
         raise NotImplementedError
+
 
 

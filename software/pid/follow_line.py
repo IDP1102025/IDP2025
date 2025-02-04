@@ -1,5 +1,3 @@
-import time
-from sensors.sensor_manager import LineSensor
 
 class NotPidFollower:
     def __init__(self, outer_left_sensor, inner_left_sensor, inner_right_sensor, outer_right_sensor):
@@ -11,7 +9,7 @@ class NotPidFollower:
 
         self.error_loop = 0
 
-    def follow_the_line(self, current_left_speed, current_right_speed):
+    def follow_line_step(self, current_left_speed, current_right_speed):
         # 1) Read sensors
         outer_left_detect  = self.outer_left_sensor.read_sensor()   # 0 or 1
         inner_left_detect  = self.inner_left_sensor.read_sensor()
@@ -26,7 +24,10 @@ class NotPidFollower:
         
         if state_pattern == [0,1,1,0]:
             self.error_loop += 1
-            current_left_speed, current_right_speed = max(current_right_speed,current_left_speed)
+            new_speed = max(current_right_speed,current_left_speed)
+            current_left_speed = new_speed
+            current_right_speed = new_speed
+            
             if self.error_loop >= 10:
                 current_left_speed += 5
                 current_right_speed += 5
@@ -48,3 +49,4 @@ class NotPidFollower:
                 current_left_speed -= 10
                 current_right_speed += 10 
             return current_left_speed, current_right_speed
+

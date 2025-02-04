@@ -1,6 +1,3 @@
-import time
-from sensors.sensor_manager import LineSensor
-
 #Sensors output:
 #   1 for White
 #   0 for Black
@@ -41,7 +38,10 @@ class LineFollower:
         derivative = error - self.previous_error
         self.previous_error = error
 
-        correction = (kp * error) + (self.ki * self.integral) + (self.kd * derivative) 
+        correction = (kp * error) + #(self.ki * self.integral) + (self.kd * derivative) 
+        
+        print(correction )
+        
 
         return correction
 
@@ -61,7 +61,8 @@ class LineFollower:
         # Clamp the speeds to [50, 100] range
         new_left_speed  = max(50, min(100, new_left_speed))
         new_right_speed = max(50, min(100, new_right_speed))
-
+        
+        print(new_left_speed,new_right_speed)
         return new_left_speed, new_right_speed
 
     def follow_line_step(self, target_position, left_speed, right_speed):
@@ -111,8 +112,8 @@ class LineFollower:
                 current_position = 2
                 kp = self.kp_high
 
-            #elif state_pattern == [0,0,0,0]:
-               # print("Off the line")
+            else:
+                current_position = 0
 
         # 4) If we've been going straight for a while, maybe speed up or do a special action
         if self.error_loop == 10 and current_position == 0:
@@ -125,7 +126,6 @@ class LineFollower:
             new_left_speed, new_right_speed = self.adjust_motors(correction, left_speed, right_speed)
 
             # 6) Return new speeds
-        print((new_left_speed, new_right_speed))
         return (new_left_speed, new_right_speed)
 
     def recover_off_the_line(self):
@@ -136,3 +136,4 @@ class LineFollower:
         print("[DEBUG] Robot lost the line! Attempting recovery...")
 
         #TODO: Implement a recovery routine here
+

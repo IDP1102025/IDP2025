@@ -11,7 +11,7 @@ def test_start(wilsonbot):
 def test_line_following(wilsonbot):
 
     # Test line following by moving along the line for 2 junctions
-    wilsonbot.move(2, wilsonbot.base_speed)
+    wilsonbot.move(2)
 
 def test_turning(wilsonbot):
     # Test 90 degree turn
@@ -40,10 +40,10 @@ def test_navigation(wilsonbot):
 if __name__ == "__main__":
 
     # Init robot
+    
     wilsonbot = Robot()
-    wilsonbot.stop()
+    #wilsonbot.dual_motors.stop()
     #test_start(wilsonbot)
-    print(wilsonbot.inner_right_sensor)
     test_line_following(wilsonbot)
     
     
