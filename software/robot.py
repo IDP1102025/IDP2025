@@ -1,7 +1,7 @@
 from machine import Pin, PWM
 from controllers.motor_driver import DualMotor
 from controllers.linear_actuator_driver import LinearActuatorDriver
-from pid.pid import NotPidFollower
+from line_follow.follow_line import NotPidFollower
 from sensors.sensor_manager import LineSensor, CrashSensor, UltraSound
 from sensors.code_reader import CodeReader
 from navigation.corners import CornerIdentification
@@ -202,14 +202,13 @@ class Robot :
         
     def move(self, number_of_junctions):
         
-       
         detected_junctions = 0
         
         while detected_junctions < number_of_junctions:
             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
             print(f"Current junction count: {detected_junctions}")
             # -- 1) Get next step's speeds from your line follower
-            self.left_speed, self.right_speed = self.line_follower.follow_line_step(self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
+            self.left_speed, self.right_speed = self.line_follower.follow_tbe_line(self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
             # -- 2) Drive motors with these speeds
             
             self.dual_motors.move_forward(self.left_speed, self.right_speed)
