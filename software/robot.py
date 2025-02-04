@@ -208,11 +208,9 @@ class Robot :
             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
             print(f"Current junction count: {detected_junctions}")
             # -- 1) Get next step's speeds from your line follower
-            self.left_speed, self.right_speed = self.line_follower.follow_tbe_line(self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
+            self.left_speed, self.right_speed = self.line_follower.follow_the_line(self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
             # -- 2) Drive motors with these speeds
-            
             self.dual_motors.move_forward(self.left_speed, self.right_speed)
-            
             #-- 3) Check if we found a new junction
             if self.corner_identification.find_turn():
                 #sleep(0.1)  # small debounce
