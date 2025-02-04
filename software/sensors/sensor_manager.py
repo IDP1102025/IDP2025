@@ -1,5 +1,4 @@
-from machine import Pin, time_pulse_us
-
+from machine import Pin, time_pulse_us, ADC
 import time
 
 #Initialising Sensors
@@ -30,23 +29,15 @@ class CrashSensor:
 #Distance Sensor
 class UltraSound: 
     #trigger pin is the emitter of the wave, while the echo pin recieves it
-    def __init__(self, trigger_pin, echo_pin):
-        self.trigger = Pin(trigger_pin, Pin.OUT)
-        self.echo = Pin(echo_pin, Pin.IN, Pin.PULL_DOWN)
+    def __init__(self, pin=26):
+        self.pin = ADC(pin)
+        self.MAX_RANGE = 520
+        self.adc_solution = 65535.0
 
     def detect_distance(self):
-        self.trigger.low()
-        time.sleep_us(2)
-        self.trigger.high()
-        time.sleep_us(2)
-        self.trigger.low()
-
-        duration = time_pulse_us(self.echo, 1, 30000)
-
-        distance = (duration / 2) / 29.1
-
-        return distance
-
+        sensitivity_t = self.pin.read_u16()
+        dist_t = sensitivity_t * self.MAX_RANGE / self.adc_solution
+        return dist_t
 
 
 
