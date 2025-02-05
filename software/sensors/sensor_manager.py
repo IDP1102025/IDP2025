@@ -1,6 +1,4 @@
-from machine import Pin, time_pulse_us, ADC
-import time
-
+from machine import Pin, ADC
 #Initialising Sensors
 
 #Tracker Sensors 
@@ -44,6 +42,7 @@ class UltraSound:
 
 
     
+
 
 
 

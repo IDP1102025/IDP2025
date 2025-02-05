@@ -1,4 +1,4 @@
-from node import Node, StartNode, DepotNode, GoalNode, DummyNode
+from navigation.node import Node, StartNode, DepotNode, GoalNode, DummyNode
 
 
 class Graph:
@@ -139,3 +139,4 @@ if __name__ == "__main__":
     
     
     
+

@@ -1,4 +1,4 @@
-from graph import Graph, initialise_graph
+from navigation.graph import Graph, initialise_graph
 import heapq
 from collections import deque
 class Navigation:
@@ -64,27 +64,6 @@ class Navigation:
         return (distances[goal_node], node_path, dir_path)
 
 
-    def find_shortest_path_with_hardcode(self,start_node_name,end_node_name):
-        '''
-        Args:
-            start_node_name (str): Name of the starting node.
-            end_node_name (str): Name of the ending node.
-
-        Returns:
-            direction_list: List of tuples containing each (direction to travel and junctions to pass)
-            node_list: List of nodes to go from start to end
-
-        List of paths:
-
-
-        '''
-
-        node_path_dict = {
-            ('Start', )
-        }
-
-        raise NotImplementedError
-    
 
 def combine_paths(node_path, direction_path):
     if not node_path or not direction_path:
@@ -123,3 +102,4 @@ if __name__ == "__main__":
     print(nav.dijkstra_with_directions("Depot 2", "D"))
 
 # Helper function to combine adjacent nodes that have the same direction of travel
+
