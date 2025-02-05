@@ -36,17 +36,19 @@ def test_navigation(wilsonbot):
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 2"))
     # Return to the start node
     wilsonbot.return_to_start()
-
 if __name__ == "__main__":
 
     # Init robot
     
     wilsonbot = Robot()
-    #wilsonbot.dual_motors.stop()
+    wilsonbot.dual_motors.stop()
+    
     #test_start(wilsonbot)
-    test_line_following(wilsonbot)
+    
+    #test_line_following(wilsonbot)
     
     
     #test_turning(wilsonbot)
     #test_navigation(wilsonbot)
     print("test complete")
+
