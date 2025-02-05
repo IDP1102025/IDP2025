@@ -24,8 +24,8 @@ class DualMotor:
 
     def move_forward(self, left_speed=100, right_speed=100):
         # Move both motors forward at a given speed
-        self.left_dir.value(0)  # 0 for forward
-        self.right_dir.value(0)  # 0 for forward
+        self.left_dir.value(1)  # 0 for forward
+        self.right_dir.value(1)  # 0 for forward
         left_duty = int(65535 * left_speed / 100)  # Convert speed percentage to duty cycle
         right_duty = int(65535 * right_speed / 100)
         self.left_pwm.duty_u16(left_duty)
