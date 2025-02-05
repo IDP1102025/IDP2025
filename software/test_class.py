@@ -41,14 +41,15 @@ if __name__ == "__main__":
     # Init robot
     
     wilsonbot = Robot()
-    wilsonbot.dual_motors.stop()
+    
     
     #test_start(wilsonbot)
     
-    #test_line_following(wilsonbot)
-    
+    test_line_following(wilsonbot)
+    wilsonbot.dual_motors.stop()
     
     #test_turning(wilsonbot)
     #test_navigation(wilsonbot)
     print("test complete")
+
 
