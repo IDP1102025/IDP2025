@@ -38,8 +38,8 @@ class Robot :
         robot path should be a list of tuples 
         '''
         # Initialise LED and button
-        self.led = Pin(11, Pin.OUT)
-        self.button = Pin(6, Pin.IN, Pin.PULL_DOWN)
+        self.led = Pin(22, Pin.OUT)
+        self.button = Pin(21, Pin.IN, Pin.PULL_DOWN)
 
         # Initialising Motors and actuators
         self.dual_motors = DualMotor(left_dir_pin=4, left_pwm_pin=5, right_dir_pin=7, right_pwm_pin=6)
@@ -101,16 +101,15 @@ class Robot :
                 break
     
     def start(self):
-        print("robot starting")
-        junction_status = self.corner_identification.find_turn()
-        timeout = time() + 5  # 5-second timeout to prevent infinite loop
-        while junction_status != True and time() < timeout: 
-            self.dual_motors.move_forward(30, 30) # Start moving forward to find the first junction
-        if junction_status != True: # Once junction is found, proceed towards the start node
-            self.move(1, 30)
-        else:
-            self.dual_motors.stop()
-            return "Start Node Reached"
+        # Check if the robot is at the start node
+        if self.current_node.node_type == "start":
+            self.dual_motors.move_forward(50, 50)
+            while True:
+                if self.corner_identification.find_turn():
+                    self._current_task = "moving"
+                    break
+            sleep(0.25)
+            self.move(1)
 
     def return_to_start(self):
         '''
@@ -201,9 +200,7 @@ class Robot :
             self.direction_facing = desired_direction
         
     def move(self, number_of_junctions):
-        
         detected_junctions = 0
-        
         while detected_junctions < number_of_junctions:
             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
             print(f"Current junction count: {detected_junctions}")
@@ -224,8 +221,11 @@ class Robot :
         self.dual_motors.stop()
         
 
-    def reverse(self):
-        self.dual_motors.move_backward(20)
+    def reverse(self,seconds):
+        self.dual_motors.move_backward(50)
+        sleep(seconds)
+        self.dual_motors.stop()
+
     
     def stop(self):
         self.dual_motors.stop()
