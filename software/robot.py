@@ -38,7 +38,7 @@ class Robot :
         robot path should be a list of tuples 
         '''
         # Initialise LED and button
-        self.led = Pin(22, Pin.OUT)
+        self.led_flasher = LEDFlasher(22)
         self.button = Pin(21, Pin.IN, Pin.PULL_DOWN)
 
         # Initialising Motors and actuators
@@ -70,7 +70,7 @@ class Robot :
         self.robot_direction_path = deque([],12) # Deque of directions of travel and number of junctions to travel in that direction
         
         # Inititalise robot speeds
-        self.right_speed , self.left_speed = 75, 75
+        self.right_speed , self.left_speed = 0 , 0
 
         # Robot states
         self._current_task = "idle"  # Use an underscore to define a private variable
@@ -81,14 +81,11 @@ class Robot :
 
     @current_task.setter
     def current_task(self, task):
-        """Set the robot's current task and update the LED accordingly."""
         self._current_task = task
-
-        # LED ON if task is not idle, else OFF
         if task != "idle":
-            self.led.value(1)  # Turn LED ON
+            self.led_flasher.start() # Start flashing LED when robot is not idle
         else:
-            self.led.value(0)  # Turn LED OFF
+            self.led_flasher.stop() # Stop flashing LED when robot is idle
 
 
     def robot_standby(self):
@@ -105,10 +102,10 @@ class Robot :
         if self.current_node.node_type == "start":
             self.dual_motors.move_forward(50, 50)
             while True:
-                if self.corner_identification.find_turn():
+                if self.corner_identification():
                     self._current_task = "moving"
                     break
-            sleep(0.25)
+            sleep(0.5)
             self.move(1)
 
     def return_to_start(self):
@@ -117,6 +114,7 @@ class Robot :
         '''
         
         self.goto_node(self.navigation.graph.get_node("Start"))
+        self.current_task = "idle" # turn LED off
         self.face_direction(3)
         self.dual_motors.move_forward(30, 30)
         # if distance to wall reachers a certain value, stop and end program
@@ -127,8 +125,6 @@ class Robot :
             target_node (Node): Node object to navigate to
         '''
         # Performs navigation and pathing to a specific node from the current node
-        # Update status
-        self.current_task = "moving"
     
         # Clear current path of node objects
         self.robot_node_path.clear()
@@ -149,9 +145,6 @@ class Robot :
         
         elif self.current_node.node_type == "goal":
             self.target_node()
-        
-        # Update status back to idle
-        self.current_task = "idle"
     
     def execute_pathing(self):
         # Execute the path to the target node usings the robot's inbuilt queue
@@ -164,8 +157,12 @@ class Robot :
             self.face_direction(next_direction)
             
             # Move to the next node, travelling for n junctions
-            self.move(number_of_junctions_to_pass,base_speed=self.base_speed)
+            self.move(number_of_junctions_to_pass)
             self.current_node = next_node # Once new node is reached, update current node
+        print(self.current_node.name)
+        if len(self.robot_direction_path) != 0:
+            print("Error in pathing")
+            print(self.robot_direction_path)
         
     
     def face_direction(self, desired_direction):
@@ -201,23 +198,42 @@ class Robot :
         
     def move(self, number_of_junctions):
         detected_junctions = 0
+        junction_active = False  # Indicates a junction is currently being counted
+        no_junction_counter = 0  # Counts consecutive cycles with no junction
+        required_false_cycles = 3  # Number of consecutive False readings to reset the flag
+
         while detected_junctions < number_of_junctions:
             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
             print(f"Current junction count: {detected_junctions}")
-            # -- 1) Get next step's speeds from your line follower
-            self.left_speed, self.right_speed = self.line_follower.follow_the_line(self.left_speed, self.right_speed)  # Change line_follower to take in 3 args 
-            # -- 2) Drive motors with these speeds
-            self.dual_motors.move_forward(self.left_speed, self.right_speed)
-            #-- 3) Check if we found a new junction
-            if self.corner_identification.find_turn():
-                #sleep(0.1)  # small debounce
-               
-                if self.corner_identification.find_turn():  # confirm the junction
-                    detected_junctions += 1
 
-            #sleep(0.05)  # short delay to avoid hammering the loop too fast
+            # 1) Get the next step's speeds from your line follower
+            self.left_speed, self.right_speed = self.line_follower.follow_the_line(self.left_speed, self.right_speed)
+            
+            # 2) Drive motors with these speeds
+            self.dual_motors.move_forward(self.left_speed, self.right_speed)
+            
+            # 3) Check for junction detection
+            junction_detected = self.corner_identification.find_turn(self.line_follower.state_pattern)
+            print(f"[DEBUG] Junction sensor reading: {junction_detected}")
+
+            if junction_detected:
+                if not junction_active:
+                    detected_junctions += 1
+                    junction_active = True  # Count this junction
+                    no_junction_counter = 0  # Reset counter when a junction is detected
+                    print("Junction detected, count incremented.")
+            else:
+                no_junction_counter += 1
+                # Reset the junction_active flag only after several consecutive False readings
+                if no_junction_counter >= required_false_cycles:
+                    if junction_active:
+                        print("Junction passed, resetting flag.")
+                    junction_active = False
+
+            sleep(0.1)  # Adjust as needed for your system's responsiveness
+
+        print(f"Final junction count: {detected_junctions}")
         self.dual_motors.stop()
-        
 
     def reverse(self,seconds):
         self.dual_motors.move_backward(50)
@@ -276,5 +292,27 @@ class Robot :
         # command to test the robot by moving to a specific node and then returning to the start
         raise NotImplementedError
 
+
+
+# LED helper Flasher class
+class LEDFlasher:
+    def __init__(self, pin, interval=500):
+        self.led = Pin(pin, Pin.OUT)
+        self.interval = interval  # milliseconds
+        self._timer = None
+
+    def start(self):
+        if self._timer is None:
+            self._timer = Timer(-1)
+            self._timer.init(period=self.interval, mode=Timer.PERIODIC, callback=self._toggle)
+
+    def stop(self):
+        if self._timer:
+            self._timer.deinit()
+            self._timer = None
+        self.led.value(0)  # ensure LED is off
+
+    def _toggle(self, timer):
+        self.led.value(not self.led.value())
 
 
