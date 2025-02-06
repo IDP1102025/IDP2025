@@ -48,6 +48,3 @@ class NotPidFollower:
                 current_left_speed = 60
                 current_right_speed = 80
         return current_left_speed, current_right_speed
-            
-
-

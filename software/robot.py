@@ -38,7 +38,7 @@ class Robot :
         robot path should be a list of tuples 
         '''
         # Initialise LED and button
-        self.led_flasher = LEDFlasher(22)
+        self.led_flasher = Pin(22, Pin.OUT)
         self.button = Pin(21, Pin.IN, Pin.PULL_DOWN)
 
         # Initialising Motors and actuators
@@ -83,30 +83,28 @@ class Robot :
     def current_task(self, task):
         self._current_task = task
         if task != "idle":
-            self.led_flasher.start() # Start flashing LED when robot is not idle
+            self.led.value(1)
         else:
-            self.led_flasher.stop() # Stop flashing LED when robot is idle
-
+            self.led.value(0)
 
     def robot_standby(self):
         while True:
             button_state = self.button.value()
             print(f"Button state: {button_state}")  # Debug print
             if button_state == 1:
-                print("Button pressed! Starting the robot...")  # Confirm action
-                self.start()
                 break
+        print("Button pressed! Starting the robot...")  # Confirm action
+        self.start()
     
     def start(self):
         # Check if the robot is at the start node
-        if self.current_node.node_type == "start":
-            self.dual_motors.move_forward(50, 50)
-            while True:
-                if self.corner_identification():
-                    self._current_task = "moving"
-                    break
-            sleep(0.5)
-            self.move(1)
+        self.dual_motors.move_forward(50, 50)
+        while True:
+            if self.corner_identification():
+                self._current_task = "moving"
+                break
+        sleep(0.5)
+        self.move(1)
 
     def return_to_start(self):
         '''
@@ -143,8 +141,6 @@ class Robot :
         if self.current_node.node_type == "depot":
             self.depot()
         
-        elif self.current_node.node_type == "goal":
-            self.target_node()
     
     def execute_pathing(self):
         # Execute the path to the target node usings the robot's inbuilt queue
@@ -166,32 +162,34 @@ class Robot :
         
     
     def face_direction(self, desired_direction):
+        '''
+        Turn the robot to face a specific direction
+        Args:
+            desired_direction (int): Direction to face (1,2,3,4) = (Front, Right, Back, Left)
+
+        '''
+        # Add movement offset to account for wheel and sensor offset
+        
         net_turn = desired_direction - self.direction_facing
         
-        if self.direction_facing != desired_direction:
-            if abs(net_turn) == 2:
-                streets_passed = 0
-                while streets_passed < 2:
-                    if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                        streets_passed += 1
-                    self.dual_motors.turn_right(30)
-                self.dual_motors.stop()
+        if self.direction_facing != desired_direction: 
+            if abs(net_turn) == 2: # 180 degree turn
+                self.dual_motors.turn_right(30)
+                sleep(1)
+                if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
+                    self.dual_motors.stop()
 
-            elif net_turn == 1 or net_turn == -3:
-                streets_passed = 0
-                while streets_passed < 1:
-                    if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                        streets_passed += 1
-                    self.dual_motors.turn_right(30)
-                self.dual_motors.stop()
+            elif net_turn == 1 or net_turn == -3: # 90 degree turn right
+                self.dual_motors.turn_right(30)
+                sleep(0.25)
+                if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
+                    self.dual_motors.stop()
 
-            elif net_turn == -1 or net_turn == 3: 
-                streets_passed = 0
-                while streets_passed < 1:
-                    if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                        streets_passed += 1
-                    self.dual_motors.turn_left(30)
-                self.dual_motors.stop()
+            elif net_turn == -1 or net_turn == 3: # 90 degree turn left
+                self.dual_motors.turn_left(30)
+                sleep(0.25)
+                if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
+                    self.dual_motors.stop()
 
             # set new direction
             self.direction_facing = desired_direction
@@ -292,27 +290,5 @@ class Robot :
         # command to test the robot by moving to a specific node and then returning to the start
         raise NotImplementedError
 
-
-
-# LED helper Flasher class
-class LEDFlasher:
-    def __init__(self, pin, interval=500):
-        self.led = Pin(pin, Pin.OUT)
-        self.interval = interval  # milliseconds
-        self._timer = None
-
-    def start(self):
-        if self._timer is None:
-            self._timer = Timer(-1)
-            self._timer.init(period=self.interval, mode=Timer.PERIODIC, callback=self._toggle)
-
-    def stop(self):
-        if self._timer:
-            self._timer.deinit()
-            self._timer = None
-        self.led.value(0)  # ensure LED is off
-
-    def _toggle(self, timer):
-        self.led.value(not self.led.value())
 
 
