@@ -274,18 +274,20 @@ class Robot :
     
     # Block to perform at goal node
     def target_node(self):
-        # if deposit location
-        # face direction (hard code these in for each destination)
-        # move forward (set distance)
-        # drop box
-        # back up to return to junction
-
-        # elif depot
-        # call depot
-
-        # elif start node
-        # call depot
-        raise NotImplementedError
+        destination_dic = {'A': 1, 'B': 3, 'C': 4, 'D': 3}
+        if self.current_node.name in destination_dic:
+            self.face_direction(destination_dic[self.current_node.name])
+            self.move(1)
+            self.dual_motors.move_forward(50,50)
+            sleep(0.1)
+            self.dual_motors.stop()
+            # add code for the dropping box mechanism
+            if self.boxes_in_depot["Depot 1"] != 0:
+                self.goto_node(self.navigation.graph.get_node("Depot 1"))
+            elif self.boxes_in_depot["Depot 2"] != 0:
+                self.goto_node(self.navigation.graph.get_node("Depot 2"))
+            else:
+                self.return_to_start()
     
 
     def begin_test(self):
