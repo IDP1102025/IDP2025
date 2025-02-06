@@ -239,6 +239,14 @@ class Robot :
         self.dual_motors.move_backward(50)
         sleep(seconds)
         self.dual_motors.stop()
+    
+    def reverse_to_junction(self):
+        # Reverse until a junction is detected
+        while True:
+            self.dual_motors.move_backward(50)
+            if self.corner_identification.find_turn(self.line_follower.state_pattern):
+                break
+        self.dual_motors.stop()
 
     
     def stop(self):
@@ -282,7 +290,7 @@ class Robot :
             sleep(0.1)
             self.dual_motors.stop()
             # add code for the dropping box mechanism
-            # self.reverse_to_junction
+            self.reverse_to_junction
             if self.boxes_in_depot["Depot 1"] != 0:
                 self.goto_node(self.navigation.graph.get_node("Depot 1"))
             elif self.boxes_in_depot["Depot 2"] != 0:
