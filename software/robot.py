@@ -282,6 +282,7 @@ class Robot :
             sleep(0.1)
             self.dual_motors.stop()
             # add code for the dropping box mechanism
+            # self.reverse_to_junction
             if self.boxes_in_depot["Depot 1"] != 0:
                 self.goto_node(self.navigation.graph.get_node("Depot 1"))
             elif self.boxes_in_depot["Depot 2"] != 0:
