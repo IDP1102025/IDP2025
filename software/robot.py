@@ -38,8 +38,8 @@ class Robot :
         robot path should be a list of tuples 
         '''
         # Initialise LED and button
-        self.led_flasher = Pin(22, Pin.OUT)
-        self.button = Pin(21, Pin.IN, Pin.PULL_DOWN)
+        self.led_flasher = Pin(21, Pin.OUT)
+        self.button = Pin(22, Pin.IN, Pin.PULL_DOWN)
 
         # Initialising Motors and actuators
         self.dual_motors = DualMotor(left_dir_pin=4, left_pwm_pin=5, right_dir_pin=7, right_pwm_pin=6)
@@ -48,7 +48,7 @@ class Robot :
         # Init Sensors
         #self.ultrasonic_sensor = UltraSound(None,None)
 
-        #self.code_scanner = CodeReader(None,None)
+        #self.qr = CodeReader(None,None)
         self.outer_left_sensor = LineSensor(8)
         self.inner_left_sensor = LineSensor(9)
         self.inner_right_sensor = LineSensor(10)
@@ -100,7 +100,7 @@ class Robot :
         # Check if the robot is at the start node
         self.dual_motors.move_forward(50, 50)
         while True:
-            if self.corner_identification():
+            if self.corner_identification.find_turn(self.line_follower.state_pattern):
                 self._current_task = "moving"
                 break
         sleep(0.5)
@@ -174,24 +174,29 @@ class Robot :
         
         net_turn = desired_direction - self.direction_facing
         
-        if self.direction_facing != desired_direction: 
+        if self.direction_facing != desired_direction:
             if abs(net_turn) == 2: # 180 degree turn
-                self.dual_motors.turn_right(30)
+                self.dual_motors.turn_right(50)
                 sleep(1)
                 if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
                     self.dual_motors.stop()
+                    print([self.outer_left_sensor.value(),self.inner_left_sensor.value(),self.inner_right_sensor.value(),self.outer_right_sensor.value()])
 
             elif net_turn == 1 or net_turn == -3: # 90 degree turn right
-                self.dual_motors.turn_right(30)
-                sleep(0.25)
+                self.dual_motors.turn_right(50)
+                sleep(0.5)
                 if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
                     self.dual_motors.stop()
+                    print([self.outer_left_sensor.value(),self.inner_left_sensor.value(),self.inner_right_sensor.value(),self.outer_right_sensor.value()])
+
 
             elif net_turn == -1 or net_turn == 3: # 90 degree turn left
-                self.dual_motors.turn_left(30)
-                sleep(0.25)
+                self.dual_motors.turn_left(50)
+                sleep(0.5)
                 if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
                     self.dual_motors.stop()
+                    print([self.outer_left_sensor.value(),self.inner_left_sensor.value(),self.inner_right_sensor.value(),self.outer_right_sensor.value()])
+
 
             # set new direction
             self.direction_facing = desired_direction
@@ -256,7 +261,7 @@ class Robot :
     def depot(self):
         # Face the direction of the depot (south)
         self.face_direction(3)
-        self.qr = CodeReader()
+        
         
         # TODO: Implement depot logic
         pickups_1 = 0
@@ -302,6 +307,7 @@ class Robot :
     def begin_test(self):
         # command to test the robot by moving to a specific node and then returning to the start
         raise NotImplementedError
+
 
 
 

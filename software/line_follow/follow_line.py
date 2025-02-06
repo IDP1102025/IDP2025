@@ -28,23 +28,29 @@ class NotPidFollower:
             self.error_loop += 1 # Add 1 to the straight counter
             # Set speeds to match
             if self.error_loop >= 15:
-                current_left_speed = 85
-                current_right_speed = 85
+                current_left_speed = 6
+                current_right_speed = 60
             else:
-                current_left_speed = 80
-                current_right_speed = 80
+                current_left_speed = 50
+                current_right_speed = 50
         else:
             self.error_loop = 0
-            if self.state_pattern == [0,0,1,1]:  # slightly left
-                current_left_speed =  80
-                current_right_speed = 70
-            elif self.state_pattern == [1,1,0,0]:   # slightly right
-                current_left_speed = 70
-                current_right_speed = 80
+            if self.state_pattern == [0,0,1,0]:  # slightly left
+                current_left_speed =  50
+                current_right_speed = 40
+            elif self.state_pattern == [0,1,0,0]:   # slightly right
+                current_left_speed = 40
+                current_right_speed = 50
+            elif self.state_pattern == [0,0,1,1]: # bigger correction
+                current_left_speed = 50
+                current_right_speed = 35
+            elif self.state_pattern == [1,1,0,0]:
+                current_left_speed = 35
+                current_right_speed = 50
             elif self.state_pattern == [0,0,0,1]: # bigger correction
-                current_left_speed = 80
-                current_right_speed = 60
+                current_left_speed = 50
+                current_right_speed = 30
             elif self.state_pattern == [1,0,0,0]:
-                current_left_speed = 60
-                current_right_speed = 80
+                current_left_speed = 30
+                current_right_speed = 50
         return current_left_speed, current_right_speed

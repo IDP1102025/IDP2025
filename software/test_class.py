@@ -1,5 +1,5 @@
 from robot import Robot
-
+from time import sleep
 def test_start(wilsonbot):
     # Test the robot to go to the start node
     # Start the robot on standby mode
@@ -16,16 +16,20 @@ def test_line_following(wilsonbot):
 def test_turning(wilsonbot):
     # Test 90 degree turn
     wilsonbot.face_direction(2)
-
+    print(wilsonbot.direction_facing)
+    sleep(5)
     # Test 180 degree turn
     wilsonbot.face_direction(4)
-
+    print(wilsonbot.direction_facing)
+    sleep(5)
     # test 90 degree turn
     wilsonbot.face_direction(3)
-
+    print(wilsonbot.direction_facing)
+    sleep(5)
     # Go back to start
     wilsonbot.face_direction(1)
-
+    print(wilsonbot.direction_facing)
+    sleep(5)
 def test_navigation(wilsonbot):
     print("STARTING")
 
@@ -44,12 +48,13 @@ if __name__ == "__main__":
     
     
     #test_start(wilsonbot)
-    
-    test_line_following(wilsonbot)
+    #test_line_following(wilsonbot)
+
     wilsonbot.dual_motors.stop()
     
-    #test_turning(wilsonbot)
+    test_turning(wilsonbot)
     #test_navigation(wilsonbot)
     print("test complete")
+
 
 
