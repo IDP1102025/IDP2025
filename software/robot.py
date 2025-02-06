@@ -140,6 +140,8 @@ class Robot :
         # Execute action at current node, either depot or goal
         if self.current_node.node_type == "depot":
             self.depot()
+        elif self.current_node.node_type == "goal":
+            self.target_node()
         
     
     def execute_pathing(self):
