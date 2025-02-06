@@ -79,6 +79,7 @@ class Robot :
     def current_task(self):
         return self._current_task
 
+    # Sets the status of the LED if robot is not idle
     @current_task.setter
     def current_task(self, task):
         self._current_task = task
@@ -87,6 +88,7 @@ class Robot :
         else:
             self.led.value(0)
 
+    # Starts the robot if the button is pressed - calls the self.start() code
     def robot_standby(self):
         while True:
             button_state = self.button.value()
@@ -100,9 +102,11 @@ class Robot :
         # Check if the robot is at the start node
         self.dual_motors.move_forward(50, 50)
         while True:
+            # while moving forward, if it detects a corner, it should turn its LED on
             if self.corner_identification():
                 self._current_task = "moving"
                 break
+        # Continues moving forward until it reaches the first node
         sleep(0.5)
         self.move(1)
 
@@ -290,7 +294,7 @@ class Robot :
             sleep(0.1)
             self.dual_motors.stop()
             # add code for the dropping box mechanism
-            self.reverse_to_junction
+            # self.reverse_to_junction
             if self.boxes_in_depot["Depot 1"] != 0:
                 self.goto_node(self.navigation.graph.get_node("Depot 1"))
             elif self.boxes_in_depot["Depot 2"] != 0:
