@@ -1,4 +1,4 @@
-from navigation.graph import Graph, initialise_graph
+from graph import Graph, initialise_graph
 import heapq
 from collections import deque
 class Navigation:
@@ -66,40 +66,58 @@ class Navigation:
 
 
 def combine_paths(node_path, direction_path):
-    if not node_path or not direction_path:
-        return deque(), deque()
+    """
+    Given:
+      node_path: [node0, node1, node2, ..., nodeN]  (length N+1)
+      direction_path: [(dir0, 1), (dir1, 1), ..., (dirN-1, 1)] (length N)
+    Merge consecutive steps that have the same dir, and build a final
+    deque of nodes + directions.
+    """
+    if not node_path:
+        return deque([], 12), deque([], 12)
+    if len(node_path) == 1:
+        # Only one node, no edges
+        return deque(node_path, 12), deque([], 12)
+    if not direction_path:
+        # Means we have nodes but no directions? 
+        # Possibly an error or trivial path of 1 node. 
+        return deque(node_path, 12), deque([], 12)
 
-    merged_nodes = []  # Use list instead of deque
+    # Start with the first node and first direction
+    merged_nodes = [node_path[0]]
     merged_directions = []
-    
-    prev_direction, prev_junctions = direction_path[0]
-    current_nodes = [node_path[0]]
 
+    prev_dir = direction_path[0][0]
+    count_junctions = direction_path[0][1]
+
+    # Walk through directions 1..end
     for i in range(1, len(direction_path)):
-        direction, junctions = direction_path[i]
-        if direction == prev_direction:
-            prev_junctions += junctions  # Merge junction counts
-            current_nodes.append(node_path[i])  # Include node
+        d, c = direction_path[i]
+        if d == prev_dir:
+            # Same direction => merge junction counts
+            count_junctions += c
         else:
-            merged_directions.append((prev_direction, prev_junctions))
-            merged_nodes.append(current_nodes[-1])  # Append last node of merged group
+            # Different direction => finalize the previous direction
+            merged_directions.append((prev_dir, count_junctions))
+            # The node at index i is the boundary between steps
+            merged_nodes.append(node_path[i])
+            # Reset direction tracking
+            prev_dir = d
+            count_junctions = c
 
-            # Reset
-            prev_direction, prev_junctions = direction, junctions
-            current_nodes = [node_path[i]]
+    # Append the final direction
+    merged_directions.append((prev_dir, count_junctions))
+    # Append the final node (goal)
+    merged_nodes.append(node_path[-1])
 
-    # Append last segment
-    merged_directions.append((prev_direction, prev_junctions))
-    merged_nodes.append(current_nodes[-1])
-
-    # Convert to deque at the end (O(n))
-    return deque(merged_nodes), deque(merged_directions)
+    return deque(merged_nodes, 12), deque(merged_directions, 12)
 
 if __name__ == "__main__":
     nav = Navigation()
-    print(nav.dijkstra_with_directions("Start Node", "Depot 1"))
-    print(nav.dijkstra_with_directions("B", "Start Node"))
-    print(nav.dijkstra_with_directions("Depot 2", "D"))
+    print(nav.dijkstra_with_directions(nav.graph.get_node("Start Node"), nav.graph.get_node("Depot 1")))
+    print(nav.dijkstra_with_directions(nav.graph.get_node("B"), nav.graph.get_node("Start Node")))
+    print(nav.dijkstra_with_directions(nav.graph.get_node("Depot 2"), nav.graph.get_node("D")))
 
 # Helper function to combine adjacent nodes that have the same direction of travel
+
 

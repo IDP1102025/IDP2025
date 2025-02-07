@@ -1,6 +1,6 @@
 import struct
 from time import sleep,time
-from machine import Pin
+import machine
 
 
 class CodeReader:
@@ -24,10 +24,9 @@ class CodeReader:
         self.sda_pin = sda_pin
 
         # Set up the I2C interface
-        self.i2c = machine.I2C(0,
+        self.i2c = machine.I2C(1,
                                scl=machine.Pin(self.scl_pin),
-                               sda=machine.Pin(self.sda_pin),
-                               freq=freq)
+                               sda=machine.Pin(self.sda_pin))
         self.data = None
 
     def read_data(self):

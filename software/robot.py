@@ -38,17 +38,18 @@ class Robot :
         robot path should be a list of tuples 
         '''
         # Initialise LED and button
-        self.led_flasher = Pin(21, Pin.OUT)
+        self.led = Pin(16, Pin.OUT)
         self.button = Pin(22, Pin.IN, Pin.PULL_DOWN)
-
+        
+        
         # Initialising Motors and actuators
         self.dual_motors = DualMotor(left_dir_pin=4, left_pwm_pin=5, right_dir_pin=7, right_pwm_pin=6)
-        #self.linear_actuator = LinearActuatorDriver(None,None) # add pins for linear actuator
+        self.linear_actuator = LinearActuatorDriver(0,1) # add pins for linear actuator
 
         # Init Sensors
-        #self.ultrasonic_sensor = UltraSound(None,None)
+        self.ultrasonic_sensor = UltraSound(26)
 
-        #self.qr = CodeReader(None,None)
+        self.qr = CodeReader(15,14)
         self.outer_left_sensor = LineSensor(8)
         self.inner_left_sensor = LineSensor(9)
         self.inner_right_sensor = LineSensor(10)
@@ -70,7 +71,7 @@ class Robot :
         self.robot_direction_path = deque([],12) # Deque of directions of travel and number of junctions to travel in that direction
         
         # Inititalise robot speeds
-        self.right_speed , self.left_speed = 0 , 0
+        self.right_speed , self.left_speed = 70 , 70
 
         # Robot states
         self._current_task = "idle"  # Use an underscore to define a private variable
@@ -83,16 +84,11 @@ class Robot :
     @current_task.setter
     def current_task(self, task):
         self._current_task = task
-        if task != "idle":
-            self.led.value(1)
-        else:
-            self.led.value(0)
 
     # Starts the robot if the button is pressed - calls the self.start() code
     def robot_standby(self):
         while True:
             button_state = self.button.value()
-            print(f"Button state: {button_state}")  # Debug print
             if button_state == 1:
                 break
         print("Button pressed! Starting the robot...")  # Confirm action
@@ -105,9 +101,10 @@ class Robot :
             # while moving forward, if it detects a corner, it should turn its LED on
             if self.corner_identification.find_turn(self.line_follower.state_pattern):
                 self._current_task = "moving"
+                self.led.value(1)
                 break
         # Continues moving forward until it reaches the first node
-        sleep(0.5)
+        sleep(0.25)
         self.move(1)
 
     def return_to_start(self):
@@ -129,13 +126,14 @@ class Robot :
         # Performs navigation and pathing to a specific node from the current node
     
         # Clear current path of node objects
-        self.robot_node_path.clear()
+        self.robot_node_path  = deque([],12)
 
         # Clear current direction path
-        self.robot_direction_path.clear()
+        self.robot_direction_path = deque([],12)
 
         # Get the path to the target node
         # Algo function returns compressed paths already
+        print(self.current_node, target_node)
         distance_to_node, self.robot_node_path, self.robot_direction_path = self.navigation.dijkstra_with_directions(self.current_node, target_node) 
 
         # Execute path
@@ -150,6 +148,8 @@ class Robot :
     
     def execute_pathing(self):
         # Execute the path to the target node usings the robot's inbuilt queue
+        print(list(self.robot_node_path))
+        print(list(self.robot_direction_path))
         self.current_node = self.robot_node_path.popleft() # first node is the node we are starting at so pop it off first
         while self.robot_direction_path: # While direction queue is not empty
             next_node = self.robot_node_path.popleft()
@@ -179,42 +179,55 @@ class Robot :
         net_turn = desired_direction - self.direction_facing
         
         if self.direction_facing != desired_direction:
+            self.dual_motors.move_forward(50,50)
+            
             if abs(net_turn) == 2: # 180 degree turn
-                self.dual_motors.turn_right(50)
+                self.dual_motors.u_turn(60)
                 sleep(1)
-                if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                    self.dual_motors.stop()
-                    print([self.outer_left_sensor.value(),self.inner_left_sensor.value(),self.inner_right_sensor.value(),self.outer_right_sensor.value()])
+                while True:
+                    current_pattern = self.line_follower.scan_state_patterns()
+                    # If the desired pattern is detected
+                    if current_pattern == [0, 1, 1, 0]:
+                        print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
+                        self.dual_motors.stop()
+                        break
 
             elif net_turn == 1 or net_turn == -3: # 90 degree turn right
-                self.dual_motors.turn_right(50)
-                sleep(0.5)
-                if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                    self.dual_motors.stop()
-                    print([self.outer_left_sensor.value(),self.inner_left_sensor.value(),self.inner_right_sensor.value(),self.outer_right_sensor.value()])
-
-
+                self.dual_motors.turn_right(80)
+                sleep(1)
+                while True:
+                    self.line_follower.scan_state_patterns()
+                    if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
+                        print("[INFO] Detected inner sensors = 1. Stopping turn.")
+                        self.dual_motors.stop()
+                        break
+                    
             elif net_turn == -1 or net_turn == 3: # 90 degree turn left
-                self.dual_motors.turn_left(50)
-                sleep(0.5)
-                if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                    self.dual_motors.stop()
-                    print([self.outer_left_sensor.value(),self.inner_left_sensor.value(),self.inner_right_sensor.value(),self.outer_right_sensor.value()])
-
-
+                self.dual_motors.turn_left(80)
+                sleep(1)
+                while True:
+                    self.line_follower.scan_state_patterns()
+                    if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
+                        print("[INFO] Detected inner sensors = 1. Stopping turn.")
+                        self.dual_motors.stop()
+                        break
+                    
             # set new direction
             self.direction_facing = desired_direction
+        else:
+            print("Already facing the desired direction.")
         
     def move(self, number_of_junctions):
+        self.current_task = "moving"
         detected_junctions = 0
         junction_active = False  # Indicates a junction is currently being counted
         no_junction_counter = 0  # Counts consecutive cycles with no junction
         required_false_cycles = 3  # Number of consecutive False readings to reset the flag
 
         while detected_junctions < number_of_junctions:
-            print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
-            print(f"Current junction count: {detected_junctions}")
-
+#             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
+#             print(f"Current junction count: {detected_junctions}")
+#             print(self.line_follower.state_pattern)
             # 1) Get the next step's speeds from your line follower
             self.left_speed, self.right_speed = self.line_follower.follow_the_line(self.left_speed, self.right_speed)
             
@@ -223,25 +236,24 @@ class Robot :
             
             # 3) Check for junction detection
             junction_detected = self.corner_identification.find_turn(self.line_follower.state_pattern)
-            print(f"[DEBUG] Junction sensor reading: {junction_detected}")
+#             print(f"[DEBUG] Junction sensor reading: {junction_detected}")
 
             if junction_detected:
                 if not junction_active:
                     detected_junctions += 1
                     junction_active = True  # Count this junction
                     no_junction_counter = 0  # Reset counter when a junction is detected
-                    print("Junction detected, count incremented.")
+#                     print("Junction detected, count incremented.")
             else:
                 no_junction_counter += 1
                 # Reset the junction_active flag only after several consecutive False readings
                 if no_junction_counter >= required_false_cycles:
-                    if junction_active:
-                        print("Junction passed, resetting flag.")
+#                     if junction_active:
+#                         print("Junction passed, resetting flag.")
                     junction_active = False
 
-            sleep(0.1)  # Adjust as needed for your system's responsiveness
-
-        print(f"Final junction count: {detected_junctions}")
+        print(self.line_follower.state_pattern)
+#         print(f"Final junction count: {detected_junctions}")
         self.dual_motors.stop()
 
     def reverse(self,seconds):
@@ -306,12 +318,3 @@ class Robot :
                 self.goto_node(self.navigation.graph.get_node("Depot 2"))
             else:
                 self.return_to_start()
-    
-
-    def begin_test(self):
-        # command to test the robot by moving to a specific node and then returning to the start
-        raise NotImplementedError
-
-
-
-

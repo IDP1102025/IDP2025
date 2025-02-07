@@ -28,29 +28,36 @@ class NotPidFollower:
             self.error_loop += 1 # Add 1 to the straight counter
             # Set speeds to match
             if self.error_loop >= 15:
-                current_left_speed = 6
-                current_right_speed = 60
+                current_left_speed = 90
+                current_right_speed = 90
             else:
-                current_left_speed = 50
-                current_right_speed = 50
+                current_left_speed = 80
+                current_right_speed = 80
         else:
             self.error_loop = 0
             if self.state_pattern == [0,0,1,0]:  # slightly left
-                current_left_speed =  50
-                current_right_speed = 40
+                current_left_speed =  80
+                current_right_speed = 65
             elif self.state_pattern == [0,1,0,0]:   # slightly right
-                current_left_speed = 40
-                current_right_speed = 50
-            elif self.state_pattern == [0,0,1,1]: # bigger correction
-                current_left_speed = 50
-                current_right_speed = 35
-            elif self.state_pattern == [1,1,0,0]:
-                current_left_speed = 35
-                current_right_speed = 50
-            elif self.state_pattern == [0,0,0,1]: # bigger correction
-                current_left_speed = 50
-                current_right_speed = 30
-            elif self.state_pattern == [1,0,0,0]:
-                current_left_speed = 30
-                current_right_speed = 50
+                current_left_speed = 65
+                current_right_speed = 80
+            elif self.state_pattern == [0,0,0,0]:   # hard left
+                current_left_speed =  0
+                current_right_speed = 0
+                print("lost the line")
         return current_left_speed, current_right_speed
+    def scan_state_patterns(self):
+        # 1) Read sensors
+        outer_left_detect  = self.outer_left_sensor.read_sensor()   # 0 or 1
+        inner_left_detect  = self.inner_left_sensor.read_sensor()
+        inner_right_detect = self.inner_right_sensor.read_sensor()
+        outer_right_detect = self.outer_right_sensor.read_sensor()
+
+        # 2) Determine sensor pattern
+        self.state_pattern = [outer_left_detect,
+                         inner_left_detect,
+                         inner_right_detect,
+                         outer_right_detect]
+        
+        return self.state_pattern
+

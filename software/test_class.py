@@ -10,28 +10,22 @@ def test_start(wilsonbot):
 
 def test_line_following(wilsonbot):
 
-    # Test line following by moving along the line for 2 junctions
-    wilsonbot.move(2)
-
-def test_turning(wilsonbot):
-    # Test 90 degree turn
+# Test line following by moving along the line for 2 junctions
+    print(wilsonbot.direction_facing)
+    wilsonbot.move(1)
     wilsonbot.face_direction(2)
-    print(wilsonbot.direction_facing)
-    sleep(5)
-    # Test 180 degree turn
-    wilsonbot.face_direction(4)
-    print(wilsonbot.direction_facing)
-    sleep(5)
-    # test 90 degree turn
+    wilsonbot.move(1)
     wilsonbot.face_direction(3)
-    print(wilsonbot.direction_facing)
-    sleep(5)
-    # Go back to start
-    wilsonbot.face_direction(1)
-    print(wilsonbot.direction_facing)
-    sleep(5)
+    wilsonbot.move(2)
+    wilsonbot.face_direction(2)
+    wilsonbot.move(2)
+    wilsonbot.face_direction(4)
+    
+    
 def test_navigation(wilsonbot):
     print("STARTING")
+    
+    wilsonbot.current_node = wilsonbot.navigation.graph.get_node("Start Node")
 
     # Go to the first depot
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
@@ -40,20 +34,24 @@ def test_navigation(wilsonbot):
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 2"))
     # Return to the start node
     wilsonbot.return_to_start()
+
+def test_LED(wilsonbot):
+    print("light on")
+    wilsonbot.led.value(1)
+    sleep(3)
+    wilsonbot.led.value(0)
+    print("light off")
 if __name__ == "__main__":
-
     # Init robot
-    
     wilsonbot = Robot()
-    
-    
-    #test_start(wilsonbot)
-    #test_line_following(wilsonbot)
+        
+    test_start(wilsonbot)
+    # test_line_following(wilsonbot)
 
-    wilsonbot.dual_motors.stop()
+#     wilsonbot.dual_motors.stop()
     
-    test_turning(wilsonbot)
-    #test_navigation(wilsonbot)
+    test_navigation(wilsonbot)
+    wilsonbot.dual_motors.stop()
     print("test complete")
 
 

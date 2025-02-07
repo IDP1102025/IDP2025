@@ -1,4 +1,4 @@
-from navigation.node import Node, StartNode, DepotNode, GoalNode, DummyNode
+from node import Node, StartNode, DepotNode, GoalNode, DummyNode
 
 
 class Graph:
