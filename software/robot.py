@@ -5,7 +5,6 @@ from line_follow.follow_line import NotPidFollower
 from sensors.sensor_manager import LineSensor, CrashSensor, UltraSound
 from sensors.code_reader import CodeReader
 from navigation.corners import CornerIdentification
-from collections import deque
 from time import time , sleep
 from navigation.navigation import Navigation
 from navigation.graph import Graph
@@ -67,8 +66,8 @@ class Robot :
         self.direction_facing = 1
         self.current_node = self.navigation.graph.get_node("Start") # Inititalise at the start node
         self.boxes_in_depot = {"Depot 1":4, "Depot 2":4}
-        self.robot_node_path = deque([],12) # Deque of node objects
-        self.robot_direction_path = deque([],12) # Deque of directions of travel and number of junctions to travel in that direction
+        self.robot_node_path = []  #list of node objects
+        self.robot_direction_path = [] # list of directions of travel and number of junctions to travel in that direction: (1,2) corresponds to (front, 2 junctions)
         
         # Inititalise robot speeds
         self.right_speed , self.left_speed = 70 , 70
@@ -126,10 +125,10 @@ class Robot :
         # Performs navigation and pathing to a specific node from the current node
     
         # Clear current path of node objects
-        self.robot_node_path  = deque([],12)
+        self.robot_node_path  = []
 
         # Clear current direction path
-        self.robot_direction_path = deque([],12)
+        self.robot_direction_path = []
 
         # Get the path to the target node
         # Algo function returns compressed paths already
@@ -150,10 +149,10 @@ class Robot :
         # Execute the path to the target node usings the robot's inbuilt queue
         print(list(self.robot_node_path))
         print(list(self.robot_direction_path))
-        self.current_node = self.robot_node_path.popleft() # first node is the node we are starting at so pop it off first
+        self.current_node = self.robot_node_path.pop() # first node is the node we are starting at so pop it off first
         while self.robot_direction_path: # While direction queue is not empty
-            next_node = self.robot_node_path.popleft()
-            next_direction , number_of_junctions_to_pass = self.robot_direction_path.popleft()
+            next_node = self.robot_node_path.pop()
+            next_direction , number_of_junctions_to_pass = self.robot_direction_path.pop()
 
             # Face the direction of the next node
             self.face_direction(next_direction)

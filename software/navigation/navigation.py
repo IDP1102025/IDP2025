@@ -1,6 +1,5 @@
 from graph import Graph, initialise_graph
 import heapq
-from collections import deque
 class Navigation:
     def __init__(self):
         self.graph = initialise_graph()
@@ -71,17 +70,17 @@ def combine_paths(node_path, direction_path):
       node_path: [node0, node1, node2, ..., nodeN]  (length N+1)
       direction_path: [(dir0, 1), (dir1, 1), ..., (dirN-1, 1)] (length N)
     Merge consecutive steps that have the same dir, and build a final
-    deque of nodes + directions.
+    list of nodes + directions.
     """
     if not node_path:
-        return deque([], 12), deque([], 12)
+        [], []
     if len(node_path) == 1:
         # Only one node, no edges
-        return deque(node_path, 12), deque([], 12)
+        return node_path, node_path
     if not direction_path:
         # Means we have nodes but no directions? 
         # Possibly an error or trivial path of 1 node. 
-        return deque(node_path, 12), deque([], 12)
+        return [], []
 
     # Start with the first node and first direction
     merged_nodes = [node_path[0]]
@@ -110,7 +109,10 @@ def combine_paths(node_path, direction_path):
     # Append the final node (goal)
     merged_nodes.append(node_path[-1])
 
-    return deque(merged_nodes, 12), deque(merged_directions, 12)
+    # Reverse the lists to place the start node at the right
+    merged_nodes.reverse()
+    merged_directions.reverse()
+    return merged_nodes,merged_directions
 
 if __name__ == "__main__":
     nav = Navigation()
