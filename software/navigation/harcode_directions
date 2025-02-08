@@ -1,0 +1,57 @@
+# defines path for each target from each location
+class Directions:
+    def __init__(self):
+        pass
+    # list item format: direction, number of nodes
+    def path(self, current_loc, target_loc):
+        if current_loc == "Depot 1":
+            if target_loc == "A":
+                return [[4, 2]]
+            elif target_loc == "B":
+                return [[1, 1], [4, 1]]
+            elif target_loc == "C":
+                return [[1, 1], [4, 2], [1, 1]]
+            elif target_loc == "D":
+                return [[1, 2], [4, 1]]
+            
+        elif current_loc == "Depot 2":
+            if target_loc == "A":
+                return [[2, 1]]
+            elif target_loc == "B":
+                return [[1, 1], [2, 2]]
+            elif target_loc == "C":
+                return [[1, 1], [2, 1], [1, 1]]
+            elif target_loc == "D":
+                return [[1, 2], [2, 2]]
+            
+        if target_loc == "Depot 1":
+            if current_loc == "A":
+                return [[2, 2]]
+            elif current_loc == "B":
+                return [[2, 1], [3, 1]]
+            elif current_loc == "C":
+                return [[3, 1], [2, 2], [3, 1]]
+            elif current_loc == "D":
+                return [[2, 1], [3, 2]]
+            
+        elif target_loc == "Depot 2":
+            if current_loc == "A":
+                return [[4, 1]]
+            elif current_loc == "B":
+                return [[4, 2], [3, 1]]
+            elif current_loc == "C":
+                return [[3, 1], [4, 1], [3, 1]]
+            elif current_loc == "D":
+                return [[4, 2], [3, 2]]
+            
+        elif target_loc == "Start Node":
+            if current_loc == "A":
+                return [[2, 1]]
+            elif current_loc == "B":
+                return [[2, 1], [3, 1], [4, 1]]
+            elif current_loc == "C":
+                return [[3, 1], [4, 1], [3, 1], [2, 2]]
+            elif current_loc == "D":
+                return [[2, 1], [3, 2], [4, 1]]
+            elif current_loc == "Depot 2":
+                return [[2, 2]]
