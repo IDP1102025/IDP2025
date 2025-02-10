@@ -95,15 +95,15 @@ class Robot :
     
     def start(self):
         # Check if the robot is at the start node
-        self.dual_motors.move_forward(50, 50)
+        self.dual_motors.move_forward(80, 80)
         while True:
-            # while moving forward, if it detects a corner, it should turn its LED on
-            if self.corner_identification.find_turn(self.line_follower.state_pattern):
+            current_pattern = self.line_follower.scan_state_patterns()
+            if current_pattern == [1,1,1,1]:
                 self._current_task = "moving"
                 self.led.value(1)
                 break
         # Continues moving forward until it reaches the first node
-        sleep(0.25)
+        sleep(1)
         self.move(1)
 
     def return_to_start(self):
@@ -111,11 +111,13 @@ class Robot :
         Return automatically to the start node from the current node
         '''
         
-        self.goto_node(self.navigation.graph.get_node("Start"))
-        self.current_task = "idle" # turn LED off
+        self.goto_node(self.navigation.graph.get_node("Start Node"))
         self.face_direction(3)
-        self.dual_motors.move_forward(30, 30)
-        # if distance to wall reachers a certain value, stop and end program
+        self.move(1)
+        self.dual_motors.move_forward(80, 80)
+        sleep(1.87)
+        self.stop()
+        
 
     def goto_node(self,target_node):
         '''
@@ -139,10 +141,10 @@ class Robot :
         self.execute_pathing()
 
         # Execute action at current node, either depot or goal
-        if self.current_node.node_type == "depot":
-            self.depot()
-        elif self.current_node.node_type == "goal":
-            self.target_node()
+#         if self.current_node.node_type == "depot":
+#             self.depot()
+#         `elif self.current_node.node_type == "goal":
+#             self.target_node()
         
     
     def execute_pathing(self):
@@ -180,6 +182,7 @@ class Robot :
         if self.direction_facing != desired_direction:
             self.dual_motors.move_forward(50,50)
             
+            
             if abs(net_turn) == 2: # 180 degree turn
                 self.dual_motors.u_turn(60)
                 sleep(1)
@@ -192,7 +195,8 @@ class Robot :
                         break
 
             elif net_turn == 1 or net_turn == -3: # 90 degree turn right
-                self.dual_motors.turn_right(80)
+                sleep(0.2)
+                self.dual_motors.turn_right(90)
                 sleep(1)
                 while True:
                     self.line_follower.scan_state_patterns()
@@ -202,7 +206,8 @@ class Robot :
                         break
                     
             elif net_turn == -1 or net_turn == 3: # 90 degree turn left
-                self.dual_motors.turn_left(80)
+                sleep(0.2)
+                self.dual_motors.turn_left(90)
                 sleep(1)
                 while True:
                     self.line_follower.scan_state_patterns()
@@ -226,7 +231,7 @@ class Robot :
         while detected_junctions < number_of_junctions:
 #             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
 #             print(f"Current junction count: {detected_junctions}")
-#             print(self.line_follower.state_pattern)
+            print(self.line_follower.state_pattern)
             # 1) Get the next step's speeds from your line follower
             self.left_speed, self.right_speed = self.line_follower.follow_the_line(self.left_speed, self.right_speed)
             
@@ -317,3 +322,4 @@ class Robot :
                 self.goto_node(self.navigation.graph.get_node("Depot 2"))
             else:
                 self.return_to_start()
+
