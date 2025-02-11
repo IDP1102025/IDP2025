@@ -112,9 +112,10 @@ class Robot :
         '''
         
         self.goto_node(self.navigation.graph.get_node("Start"))
-        self.current_task = "idle" # turn LED off
+        
         self.face_direction(3)
         self.dual_motors.move_forward(30, 30)
+        self.led.value(0)
         # if distance to wall reachers a certain value, stop and end program
 
     def goto_node(self,target_node):
@@ -216,12 +217,24 @@ class Robot :
         else:
             print("Already facing the desired direction.")
         
-    def move(self, number_of_junctions):
+    def move(self, number_of_junctions, time_to_run = 1):
         self.current_task = "moving"
         detected_junctions = 0
         junction_active = False  # Indicates a junction is currently being counted
         no_junction_counter = 0  # Counts consecutive cycles with no junction
         required_false_cycles = 3  # Number of consecutive False readings to reset the flag
+
+        if number_of_junctions == 0:
+            start_time = time()
+            while (time() - start_time) < time_to_run:
+                # 1) Get the next step's speeds from your line follower
+                self.left_speed, self.right_speed = self.line_follower.follow_the_line(self.left_speed, self.right_speed)
+                
+                # 2) Drive motors with these speeds
+                self.dual_motors.move_forward(self.left_speed, self.right_speed)
+            
+            self.dual_motors.stop()
+            # Done
 
         while detected_junctions < number_of_junctions:
 #             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
@@ -273,17 +286,20 @@ class Robot :
         self.dual_motors.stop()
 
     # Block to perform at depot nodes
-    def depot(self):
+    def depot(self, depot_number):
         # Face the direction of the depot (south)
         self.face_direction(3)
+        self.move(0, time_to_run = 5 - self.boxes_in_depot[f"Depot {depot_number}"])
+        message = self.qr.poll_for_code(2)
+        if message: 
+            target_name = message[0]
         
         
+        
+
         # TODO: Implement depot logic
-        pickups_1 = 0
-        pickups_2 = 0
-        timeout = time() + 10
-        while self.qr.poll_for_code(1) == None and time() < timeout: 
-            self.dual_motors.move_forward(10, 10)
+            
+                
         self.stop()
         if time() > timeout:
             # depot is empty (needs to be calibrated)
