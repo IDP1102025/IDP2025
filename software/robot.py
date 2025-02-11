@@ -237,7 +237,7 @@ class Robot :
         detected_junctions = 0
         junction_active = False  # Indicates a junction is currently being counted
         no_junction_counter = 0  # Counts consecutive cycles with no junction
-        required_false_cycles = 3  # Number of consecutive False readings to reset the flag
+        required_false_cycles = 2  # Number of consecutive False readings to reset the flag
 
         if number_of_junctions == 0:
             start_time = time()
