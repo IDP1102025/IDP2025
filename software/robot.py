@@ -116,6 +116,7 @@ class Robot :
         self.move(1)
         self.dual_motors.move_forward(80, 80)
         sleep(1.87)
+        self.led.value(0)
         self.stop()
         
 
@@ -185,7 +186,7 @@ class Robot :
             
             if abs(net_turn) == 2: # 180 degree turn
                 if depot_number ==1:
-                    self.dual_motors.u_turn(60)
+                    self.dual_motors.u_turn(80)
                     sleep(1)
                     while True:
                         current_pattern = self.line_follower.scan_state_patterns()
@@ -289,11 +290,16 @@ class Robot :
         self.dual_motors.stop()
     
     def reverse_to_junction(self):
+        #get off current node
+        self.dual_motors.move_backward(100)
+        sleep(2)
+        
         # Reverse until a junction is detected
         while True:
-            self.dual_motors.move_backward(50)
+            self.dual_motors.move_backward(100)
             if self.corner_identification.find_turn(self.line_follower.state_pattern):
                 break
+        # potential issue: the robot "finds a turn" because it strays from the line and outer sensors hit the line
         self.dual_motors.stop()
 
     
@@ -313,31 +319,23 @@ class Robot :
         next_node = self.navigation.graph.get_node(qr_message[0])
 
         if next_node is None:
-            print("YOU FUCKED UP BRO THE QRS CODE DIDNT SCAN")
+            print("YOU FUCKED UP BRO THE QR CODE DIDNT SCAN")
         
         else:
             while self.ultrasonic_sensor.detect_distance() < 200:
                 self.move(0,0.5)
             
-            # pickup box using linear actuator code
+            self.linear_actuator.retract(5)
             
             self.boxes_in_depot[depot_number] -= 1
 
-            self.face_direction(1,depot_number)
+            self.face_direction(1, depot_number)
 
             self.move(1)
 
             self.goto_node(next_node)
 
-
-
-
-        
-        
-        
-
-        # TODO: Implement depot logic
-            
+        # TODO: Implement depot logic   
                 
         self.stop()
         
@@ -347,16 +345,27 @@ class Robot :
     def target_node(self):
         destination_dic = {'A': 1, 'B': 3, 'C': 4, 'D': 3}
         if self.current_node.name in destination_dic:
+            #face depot deposit zone
             self.face_direction(destination_dic[self.current_node.name])
+            
+            #move to the edge of the depot
             self.move(1)
+            
+            #move slightly further into drop zone
             self.dual_motors.move_forward(50,50)
             sleep(0.1)
             self.dual_motors.stop()
-            # add code for the dropping box mechanism
-            # self.reverse_to_junction
-            if self.boxes_in_depot["Depot 1"] != 0:
+
+            #drop the package
+            self.linear_actuator.extend(5)
+
+            #reverse to the node
+            self.reverse_to_junction()
+
+            #go to next location
+            if self.boxes_in_depot[1] != 0:
                 self.goto_node(self.navigation.graph.get_node("Depot 1"))
-            elif self.boxes_in_depot["Depot 2"] != 0:
+            elif self.boxes_in_depot[2] != 0:
                 self.goto_node(self.navigation.graph.get_node("Depot 2"))
             else:
                 self.return_to_start()

@@ -13,12 +13,11 @@ class LinearActuatorDriver:
     
     def extend(self,time_length):
         self.dir.value(0)
-        self.pwm.duty_u16(65535/2) # Half speed extension
+        self.pwm.duty_u16(65535) # Full speed extension
         sleep(time_length) # Extend for stipulated time
         self.pwm.duty(0)
     def retract(self,time_length):
         self.dir.value(1)
-        self.pwm.duty_u16(65535/2) # Half speed retraction
+        self.pwm.duty_u16(65535) # Full speed retraction
         sleep(time_length) # Extend for stipulated time
         self.pwm.duty(0)
-    
