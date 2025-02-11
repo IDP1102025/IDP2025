@@ -65,7 +65,7 @@ class Robot :
         # Robot variables and states
         self.direction_facing = 1
         self.current_node = self.navigation.graph.get_node("Start") # Inititalise at the start node
-        self.boxes_in_depot = {"Depot 1":4, "Depot 2":4}
+        self.boxes_in_depot = {1:4, 2:4}
         self.robot_node_path = []  #list of node objects
         self.robot_direction_path = [] # list of directions of travel and number of junctions to travel in that direction: (1,2) corresponds to (front, 2 junctions)
         
@@ -95,7 +95,7 @@ class Robot :
     
     def start(self):
         # Check if the robot is at the start node
-        self.dual_motors.move_forward(80, 80)
+        self.dual_motors.move_forward(100, 100)
         while True:
             current_pattern = self.line_follower.scan_state_patterns()
             if current_pattern == [1,1,1,1]:
@@ -168,7 +168,7 @@ class Robot :
             print(self.robot_direction_path)
         
     
-    def face_direction(self, desired_direction):
+    def face_direction(self, desired_direction,depot_number=1):
         '''
         Turn the robot to face a specific direction
         Args:
@@ -184,19 +184,30 @@ class Robot :
             
             
             if abs(net_turn) == 2: # 180 degree turn
-                self.dual_motors.u_turn(60)
-                sleep(1)
-                while True:
-                    current_pattern = self.line_follower.scan_state_patterns()
-                    # If the desired pattern is detected
-                    if current_pattern == [0, 1, 1, 0]:
-                        print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
-                        self.dual_motors.stop()
-                        break
+                if depot_number ==1:
+                    self.dual_motors.u_turn(60)
+                    sleep(1)
+                    while True:
+                        current_pattern = self.line_follower.scan_state_patterns()
+                        # If the desired pattern is detected
+                        if current_pattern == [0, 1, 1, 0]:
+                            print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
+                            self.dual_motors.stop()
+                            break
+                else:
+                    self.dual_motors.left_u_turn(80)
+                    sleep(1)
+                    while True:
+                        current_pattern = self.line_follower.scan_state_patterns()
+                        # If the desired pattern is detected
+                        if current_pattern == [0, 1, 1, 0]:
+                            print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
+                            self.dual_motors.stop()
+                            break
 
             elif net_turn == 1 or net_turn == -3: # 90 degree turn right
                 sleep(0.2)
-                self.dual_motors.turn_right(90)
+                self.dual_motors.turn_right(100)
                 sleep(1)
                 while True:
                     self.line_follower.scan_state_patterns()
@@ -207,7 +218,7 @@ class Robot :
                     
             elif net_turn == -1 or net_turn == 3: # 90 degree turn left
                 sleep(0.2)
-                self.dual_motors.turn_left(90)
+                self.dual_motors.turn_left(100)
                 sleep(1)
                 while True:
                     self.line_follower.scan_state_patterns()
@@ -293,10 +304,34 @@ class Robot :
     def depot(self, depot_number):
         # Face the direction of the depot (south)
         self.face_direction(3)
-        self.move(0, time_to_run = 5 - self.boxes_in_depot[f"Depot {depot_number}"])
-        message = self.qr.poll_for_code(2)
-        if message: 
-            target_name = message[0]
+        self.move(0, time_to_run = 1)
+
+        while self.ultrasonic_sensor.detect_distance() >= 15:
+            self.move(0,0.5)
+        
+        qr_message = self.qr.poll_for_code(5)
+        next_node = self.navigation.graph.get_node(qr_message[0])
+
+        if next_node is None:
+            print("YOU FUCKED UP BRO THE QRS CODE DIDNT SCAN")
+        
+        else:
+            while self.ultrasonic_sensor.detect_distance() < 200:
+                self.move(0,0.5)
+            
+            # pickup box using linear actuator code
+            
+            self.boxes_in_depot[depot_number] -= 1
+
+            self.face_direction(1,depot_number)
+
+            self.move(1)
+
+            self.goto_node(next_node)
+
+
+
+
         
         
         
@@ -305,19 +340,7 @@ class Robot :
             
                 
         self.stop()
-        if time() > timeout:
-            # depot is empty (needs to be calibrated)
-            # go to other depot
-            raise NotImplementedError
-        if type(self.qr.poll_for_code(1)) == str:
-            # destination = letter from message returned by poll_for_code
-            # obtain route to the destination
-            # pick up box
-            # move backward to junction
-            # add 1 to pickups_1
-            # if pickups_1 == 4, then go to other depot after operation
-            # if pickups_2 == 4, go to start
-            raise NotImplementedError
+        
 
     
     # Block to perform at goal node

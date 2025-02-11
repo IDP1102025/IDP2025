@@ -65,5 +65,11 @@ class DualMotor:
         self.left_pwm.duty_u16(left_duty)
         self.right_pwm.duty_u16(right_duty)
 
-
+    def left_u_turn(self,speed=60):
+            self.left_dir.value(0)  # reves left motor
+            self.right_dir.value(1)  # forwar right motor
+            left_duty = int(65535 * speed / 100)  # Set speed for left motor
+            right_duty =int(65535 * speed / 100)
+            self.left_pwm.duty_u16(left_duty)
+            self.right_pwm.duty_u16(right_duty)
 
