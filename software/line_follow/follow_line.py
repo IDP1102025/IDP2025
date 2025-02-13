@@ -41,10 +41,7 @@ class NotPidFollower:
             elif self.state_pattern == [0,1,0,0]:   # slightly right
                 current_left_speed = 85
                 current_right_speed = 100
-            elif self.state_pattern == [0,0,0,0]:   # hard left
-                current_left_speed =  0
-                current_right_speed = 0
-                print("lost the line")
+            
         return current_left_speed, current_right_speed
     
     def scan_state_patterns(self):
@@ -61,4 +58,5 @@ class NotPidFollower:
                          outer_right_detect]
         
         return self.state_pattern
+
 

@@ -9,15 +9,20 @@ class LinearActuatorDriver:
         self.pwm.duty_u16(0)   
     
     def stop(self):
-        self.pwm.duty(0)
+        self.pwm.duty_u16(0)
     
     def extend(self,time_length):
         self.dir.value(0)
         self.pwm.duty_u16(65535) # Full speed extension
         sleep(time_length) # Extend for stipulated time
-        self.pwm.duty(0)
+        self.pwm.duty_u16(0)
     def retract(self,time_length):
         self.dir.value(1)
         self.pwm.duty_u16(65535) # Full speed retraction
         sleep(time_length) # Extend for stipulated time
-        self.pwm.duty(0)
+        self.pwm.duty_u16(0)
+        
+# lin = LinearActuatorDriver(0, 1)
+# 
+# lin.extend(1)
+# lin.stop()
