@@ -1,0 +1,26 @@
+from machine import ADC
+from time import sleep
+
+# from machine import Pin
+# from time import sleep
+#
+# sensor_pin = ADC(26)
+#
+# while True:
+#     dist_t = sensor_pin.read_u16()
+#     sleep(0.1)
+#     print(f"Distance: {dist_t:.2f} cm")
+
+#Constants
+MAX_RANGE = 520  # Max measurement value in cm
+ADC_SOLUTION = 65535.0  # 16-bit ADC resolution in Pico (0-65535)
+
+# Select input pin (Pico W uses 3.3V ADC, connect sensor to an ADC pin)
+sensor_pin = ADC(26)  # GPIO26 is ADC0
+
+# Main loop
+while True:
+    sensity_t = sensor_pin.read_u16()  # Read 16-bit ADC value (0-65535)
+    dist_t = sensity_t * MAX_RANGE / ADC_SOLUTION  # Convert to distance in cm
+    sleep(0.2)
+    print(f"Distance: {dist_t:.2f} cm")  # Print result#time.sleep(0.5)  # Delay 500ms
