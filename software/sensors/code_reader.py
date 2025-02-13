@@ -66,24 +66,25 @@ class CodeReader:
             sleep(self.TINY_CODE_READER_DELAY) # Delay before polling again
         return None
     
-code_reader = CodeReader(scl_pin=15, sda_pin=14)  # Pass pin numbers directly
+# code_reader = CodeReader(scl_pin=15, sda_pin=14)  # Pass pin numbers directly
 # while True:
-#     # Poll for a code for 5 seconds (adjust timeout as needed)
-#     code = code_reader.poll_for_code(timeout=5)
-#     
-#     code = code_reader.poll_for_code(timeout=5)
+#  # Poll for a code for 5 seconds (adjust timeout as needed)
+#  code = code_reader.poll_for_code(timeout=5)
+#  
+#  code = code_reader.poll_for_code(timeout=5)
 # 
-#     if code:
-#         # Convert tuple of integers to a bytes object and then decode it to a string.
-#         try:
-#             code_str = bytes(code).decode('utf-8')  # or use the appropriate encoding
-#         except UnicodeDecodeError as e:
-#             print("Decoding error:", e)
-#             code_str = "<unable to decode>"
-#         print("Code detected:", code_str)
-#     else:
-#         print("No code detected.")
-#         
-#     sleep(1)  # Add a delay to avoid too many prints too quickly
+#  if code:
+#      # Convert tuple of integers to a bytes object and then decode it to a string.
+#      try:
+#          code_str = bytes(code).decode('utf-8')  # or use the appropriate encoding
+#      except UnicodeDecodeError as e:
+#          print("Decoding error:", e)
+#          code_str = "<unable to decode>"
+#      print("Code detected:", code_str)
+#  else:
+#      print("No code detected.")
+#      
+#  sleep(1)  # Add a delay to avoid too many prints too quickly
+
 
 

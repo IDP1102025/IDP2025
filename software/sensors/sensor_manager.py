@@ -41,10 +41,14 @@ class UltraSound:
         return dist_t
 
 
+# ultrasound = UltraSound()
+# 
+# while True:
+#     print(ultrasound.detect_distance())
+# 
+# 
+#     
 
-
-
-    
 
 
 

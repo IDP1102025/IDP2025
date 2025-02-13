@@ -50,8 +50,8 @@ class Robot :
 
         self.qr = CodeReader(15,14)
         self.outer_left_sensor = LineSensor(8)
-        self.inner_left_sensor = LineSensor(10)
-        self.inner_right_sensor = LineSensor(9)
+        self.inner_left_sensor = LineSensor(9)
+        self.inner_right_sensor = LineSensor(10)
         self.outer_right_sensor = LineSensor(11)
 
         self.corner_identification = CornerIdentification(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor)
@@ -90,6 +90,7 @@ class Robot :
             button_state = self.button.value()
             if button_state == 1:
                 break
+            
         print("Button pressed! Starting the robot...")  # Confirm action
         
        
@@ -139,7 +140,7 @@ class Robot :
         # Execute path
         self.execute_pathing()
 
-        # Execute action at current node, either depot or goal
+#          Execute action at current node, either depot or goal
         print(self.current_node.node_type)
         if self.current_node.name in ["Depot 1" , "Depot 2"]:
             self.depot(int(self.current_node.name[-1]))
@@ -192,7 +193,7 @@ class Robot :
                         current_pattern = self.line_follower.scan_state_patterns()
                         # If the desired pattern is detected
                         if current_pattern == [0, 1, 1, 0]:
-                            print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
+#                             print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
                             self.dual_motors.stop()
                             break
                 else:
@@ -202,7 +203,7 @@ class Robot :
                         current_pattern = self.line_follower.scan_state_patterns()
                         # If the desired pattern is detected
                         if current_pattern == [0, 1, 1, 0]:
-                            print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
+#                             print(f"[INFO] Detected pattern {current_pattern}. Stopping turn.")
                             self.dual_motors.stop()
                             break
 
@@ -213,7 +214,7 @@ class Robot :
                 while True:
                     self.line_follower.scan_state_patterns()
                     if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                        print("[INFO] Detected inner sensors = 1. Stopping turn.")
+#                         print("[INFO] Detected inner sensors = 1. Stopping turn.")
                         self.dual_motors.stop()
                         break
                     
@@ -224,7 +225,7 @@ class Robot :
                 while True:
                     self.line_follower.scan_state_patterns()
                     if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
-                        print("[INFO] Detected inner sensors = 1. Stopping turn.")
+#                         print("[INFO] Detected inner sensors = 1. Stopping turn.")
                         self.dual_motors.stop()
                         break
                     
@@ -287,15 +288,14 @@ class Robot :
         self.dual_motors.stop()
     
     def reverse_to_junction(self):
-        #get off current node
-        self.dual_motors.move_backward(100)
-        sleep(0.2)
-        
         # Reverse until a junction is detected
         while True:
             self.dual_motors.move_backward(100)
             if self.corner_identification.find_turn(self.line_follower.state_pattern):
                 break
+        self.dual_motors.move_backward(100)
+        
+        sleep(0.5)
         # potential issue: the robot "finds a turn" because it strays from the line and outer sensors hit the line
         self.dual_motors.stop()
 
@@ -309,38 +309,48 @@ class Robot :
         # Face the direction of the depot (south)
         self.face_direction(3)
 
-#         self.reverse(2)
+        self.reverse(0.6)
         self.stop()
+        forwards = True
         
-#         qr_message = self.qr.poll_for_code(1.5)
-#         while qr_message is None:
-#             self.move(0,0.1)
-#             
-#             qr_message = self.qr.poll_for_code(1.5)
-#         
-#         print(qr_message)
-#         next_node = self.navigation.graph.get_node(qr_message[0])
-#         print(next_node)
-#
-        next_node_name = choice(['A','B','C','D'])
-        next_node = self.navigation.graph.get_node(next_node_name)
+        code = self.qr.poll_for_code(1.5)
+        while code is None:
+            if forwards:
+                self.move(0,0.5)
+                forwards = False
+                code = self.qr.poll_for_code(1.5)
+            else:
+                self.reverse(0.5)
+                forwards = True
+                code = self.qr.poll_for_code(1.5)
+            
+            
+        print (code)
+        qr_message = bytes(code).decode('utf-8')
+        print(qr_message)
+        next_node = self.navigation.graph.get_node(qr_message[0])
+        print(next_node)
+
+#         next_node_name = choice(['A','B','C','D'])
+#         next_node = self.navigation.graph.get_node("A")
 
         if next_node is None:
             print("YOU FUCKED UP BRO THE QR CODE DIDNT SCAN")
         
-        
-        
+    
         else:
-            while self.ultrasonic_sensor.detect_distance() > 12:
-                self.move(0,0.5)
+            while self.ultrasonic_sensor.detect_distance() > 25:
+                print(self.ultrasonic_sensor.detect_distance())
+                self.move(0,0.01)
             
+            self.move(0,0.1)
             self.linear_actuator.retract(3)
             
             self.boxes_in_depot[depot_number] -= 1
 
-            self.reverse(0.25 * backup_factor)
             self.face_direction(1, depot_number)
 
+            self.move(0,1)
             self.move(1)
 
             self.goto_node(next_node)
@@ -366,7 +376,10 @@ class Robot :
             self.linear_actuator.extend(3)
 
             #reverse to the node
+            
             self.reverse_to_junction()
+            self.reverse_to_junction()
+            
 
             #go to next location
             if self.boxes_in_depot[1] != 0:
@@ -375,5 +388,3 @@ class Robot :
                 self.goto_node(self.navigation.graph.get_node("Depot 2"))
             else:
                 self.return_to_start()
-
-

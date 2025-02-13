@@ -30,6 +30,37 @@ def test_navigation(wilsonbot):
     # Go to the first depot
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("A"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("B"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("C"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("D"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("A"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 2"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("B"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 2"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("C"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 2"))
+# 
+#     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("D"))
+
+    wilsonbot.goto_start()
     # Return to the start node
     wilsonbot.return_to_start()
 
@@ -43,12 +74,13 @@ def test_LED(wilsonbot):
 if __name__ == "__main__":
     # Init robot
     wilsonbot = Robot()
+    wilsonbot.led.value(0)
     test_start(wilsonbot)
-#     wilsonbot.move(1)
-    
     test_navigation(wilsonbot)
-    wilsonbot.dual_motors.stop()
-    print("test complete")
+#     wilsonbot.dual_motors.stop()
+#     
+#     print("test complete")
+
 
 
 
