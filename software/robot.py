@@ -322,7 +322,7 @@ class Robot :
             print("YOU FUCKED UP BRO THE QR CODE DIDNT SCAN")
         
         else:
-            while self.ultrasonic_sensor.detect_distance() < 200:
+            while self.ultrasonic_sensor.detect_distance() > 12:
                 self.move(0,0.5)
             
             self.linear_actuator.retract(5)
