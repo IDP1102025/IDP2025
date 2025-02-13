@@ -9,7 +9,7 @@ from time import time , sleep
 from navigation.navigation import Navigation
 from navigation.graph import Graph
 from navigation.node import Node
-
+from random import choice
 
 class Robot :
     def __init__(self):
@@ -50,8 +50,8 @@ class Robot :
 
         self.qr = CodeReader(15,14)
         self.outer_left_sensor = LineSensor(8)
-        self.inner_left_sensor = LineSensor(9)
-        self.inner_right_sensor = LineSensor(10)
+        self.inner_left_sensor = LineSensor(10)
+        self.inner_right_sensor = LineSensor(9)
         self.outer_right_sensor = LineSensor(11)
 
         self.corner_identification = CornerIdentification(self.outer_left_sensor, self.inner_left_sensor, self.inner_right_sensor, self.outer_right_sensor)
@@ -91,19 +91,17 @@ class Robot :
             if button_state == 1:
                 break
         print("Button pressed! Starting the robot...")  # Confirm action
+        
+       
         self.start()
     
     def start(self):
         # Check if the robot is at the start node
         self.dual_motors.move_forward(100, 100)
-        while True:
-            current_pattern = self.line_follower.scan_state_patterns()
-            if current_pattern == [1,1,1,1]:
-                self._current_task = "moving"
-                self.led.value(1)
-                break
-        # Continues moving forward until it reaches the first node
         sleep(1)
+        self.led.value(1)
+        
+        # Continues moving forward until it reaches the first node
         self.move(1)
 
     def return_to_start(self):
@@ -142,10 +140,12 @@ class Robot :
         self.execute_pathing()
 
         # Execute action at current node, either depot or goal
-#         if self.current_node.node_type == "depot":
-#             self.depot()
-#         `elif self.current_node.node_type == "goal":
-#             self.target_node()
+        print(self.current_node.node_type)
+        if self.current_node.name in ["Depot 1" , "Depot 2"]:
+            self.depot(int(self.current_node.name[-1]))
+        elif self.current_node.name in ["A","B","C","D"]:
+            self.target_node(self.current_node.name)
+        
         
     
     def execute_pathing(self):
@@ -238,7 +238,7 @@ class Robot :
         detected_junctions = 0
         junction_active = False  # Indicates a junction is currently being counted
         no_junction_counter = 0  # Counts consecutive cycles with no junction
-        required_false_cycles = 2  # Number of consecutive False readings to reset the flag
+        required_false_cycles = 3  # Number of consecutive False readings to reset the flag
 
         if number_of_junctions == 0:
             start_time = time()
@@ -253,9 +253,6 @@ class Robot :
             # Done
 
         while detected_junctions < number_of_junctions:
-#             print(f"[DEBUG] Left Speed: {self.left_speed}, Right Speed: {self.right_speed}")
-#             print(f"Current junction count: {detected_junctions}")
-            print(self.line_follower.state_pattern)
             # 1) Get the next step's speeds from your line follower
             self.left_speed, self.right_speed = self.line_follower.follow_the_line(self.left_speed, self.right_speed)
             
@@ -280,19 +277,19 @@ class Robot :
 #                         print("Junction passed, resetting flag.")
                     junction_active = False
 
-        print(self.line_follower.state_pattern)
+        # print(self.line_follower.state_pattern)
 #         print(f"Final junction count: {detected_junctions}")
         self.dual_motors.stop()
 
     def reverse(self,seconds):
-        self.dual_motors.move_backward(50)
+        self.dual_motors.move_backward(100)
         sleep(seconds)
         self.dual_motors.stop()
     
     def reverse_to_junction(self):
         #get off current node
         self.dual_motors.move_backward(100)
-        sleep(2)
+        sleep(0.2)
         
         # Reverse until a junction is detected
         while True:
@@ -308,27 +305,44 @@ class Robot :
 
     # Block to perform at depot nodes
     def depot(self, depot_number):
+        backup_factor = 5 - self.boxes_in_depot[depot_number]
         # Face the direction of the depot (south)
         self.face_direction(3)
-        self.move(0, time_to_run = 1)
 
-        while self.ultrasonic_sensor.detect_distance() >= 15:
-            self.move(0,0.5)
+#         self.reverse(2)
+        self.stop()
         
-        qr_message = self.qr.poll_for_code(5)
-        next_node = self.navigation.graph.get_node(qr_message[0])
+#         qr_message = self.qr.poll_for_code(1.5)
+#         while qr_message is None:
+#             self.move(0,0.1)
+#             
+#             qr_message = self.qr.poll_for_code(1.5)
+#         
+#         print(qr_message)
+#         next_node = self.navigation.graph.get_node(qr_message[0])
+#         print(next_node)
+#
+        next_node_name = choice(['A','B','C','D'])
+        next_node = self.navigation.graph.get_node(next_node_name)
 
         if next_node is None:
             print("YOU FUCKED UP BRO THE QR CODE DIDNT SCAN")
         
+        
+        
         else:
-            while self.ultrasonic_sensor.detect_distance() < 200:
-                self.move(0,0.5)
+            while self.ultrasonic_sensor.detect_distance() >2:
+                print(self.ultrasonic_sensor.detect_distance())
+                self.move(0,0.2)
+            print(self.ultrasonic_sensor.detect_distance())
+            self.stop()
+            print("reached this point 1")
             
-            self.linear_actuator.retract(5)
+            self.linear_actuator.retract(3)
             
             self.boxes_in_depot[depot_number] -= 1
 
+            self.reverse(0.25 * backup_factor)
             self.face_direction(1, depot_number)
 
             self.move(1)
@@ -336,17 +350,13 @@ class Robot :
             self.goto_node(next_node)
 
         # TODO: Implement depot logic   
-                
-        self.stop()
-        
-
     
     # Block to perform at goal node
-    def target_node(self):
+    def target_node(self,name):
         destination_dic = {'A': 1, 'B': 3, 'C': 4, 'D': 3}
-        if self.current_node.name in destination_dic:
+        if name in destination_dic:
             #face depot deposit zone
-            self.face_direction(destination_dic[self.current_node.name])
+            self.face_direction(destination_dic[name])
             
             #move to the edge of the depot
             self.move(1)
@@ -357,7 +367,7 @@ class Robot :
             self.dual_motors.stop()
 
             #drop the package
-            self.linear_actuator.extend(5)
+            self.linear_actuator.extend(3)
 
             #reverse to the node
             self.reverse_to_junction()
@@ -369,4 +379,5 @@ class Robot :
                 self.goto_node(self.navigation.graph.get_node("Depot 2"))
             else:
                 self.return_to_start()
+
 

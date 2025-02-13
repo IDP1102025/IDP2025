@@ -30,8 +30,6 @@ def test_navigation(wilsonbot):
     # Go to the first depot
     wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 1"))
 
-    # Go to the 2nd depot
-    wilsonbot.goto_node(wilsonbot.navigation.graph.get_node("Depot 2"))
     # Return to the start node
     wilsonbot.return_to_start()
 
@@ -41,18 +39,17 @@ def test_LED(wilsonbot):
     sleep(3)
     wilsonbot.led.value(0)
     print("light off")
+
 if __name__ == "__main__":
     # Init robot
     wilsonbot = Robot()
-        
     test_start(wilsonbot)
-    # test_line_following(wilsonbot)
-
-#     wilsonbot.dual_motors.stop()
+#     wilsonbot.move(1)
     
     test_navigation(wilsonbot)
     wilsonbot.dual_motors.stop()
     print("test complete")
+
 
 
 
