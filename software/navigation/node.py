@@ -23,8 +23,9 @@ class Node:
         self.neighbors[neighbor] = {
             "cost": cost,
             "direction": direction,
-            "junction": junction
+            "junction": junction,
         }
+
     def execute_action(self):
         """Executes the action associated with this node."""
         if self.action:
@@ -38,9 +39,10 @@ class Node:
         return f"Node({self.name}, Type: {self.node_type}, Neighbors: {neighbor_names})"
 
     def __repr__(self):
-     
+
         return f"Node({self.name})"
-    
+
+
 # Creat subclasses of nodes
 class StartNode(Node):
     def __init__(self, name, neighbors=None, action=None):
@@ -48,7 +50,7 @@ class StartNode(Node):
         self.node_type = "start"
 
     def execute_action(self):
-        # Insert action 
+        # Insert action
         super().execute_action()
 
 
@@ -58,10 +60,10 @@ class DepotNode(Node):
         self.node_type = "depot"
 
     def execute_action(self):
-        # Insert action 
+        # Insert action
         print("This is the start node")
         super().execute_action()
-        
+
 
 class GoalNode(Node):
     def __init__(self, name, neighbors=None, action=None):
@@ -69,7 +71,7 @@ class GoalNode(Node):
         self.node_type = "goal"
 
     def execute_action(self):
-        # Insert action 
+        # Insert action
         super().execute_action()
 
 
@@ -79,5 +81,5 @@ class DummyNode(Node):
         self.node_type = "dummy"
 
     def execute_action(self):
-       # Insert action 
+        # Insert action
         super().execute_action()

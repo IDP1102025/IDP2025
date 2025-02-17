@@ -1,32 +1,36 @@
 from graph import Graph, initialise_graph
 import heapq
+
+
 class Navigation:
     def __init__(self):
         self.graph = initialise_graph()
 
     def dijkstra_with_directions(self, start_node, goal_node):
         """Return (distance, node_path, dir_path)."""
-        
+
         # 1) Distances dict from Node obj -> c ost
-        distances = {node_obj: float('inf') for node_obj in self.graph.nodes.values()}
+        distances = {node_obj: float("inf") for node_obj in self.graph.nodes.values()}
         distances[start_node] = 0
 
         # 2) came_from dict from Node obj -> (prev_node_obj, direction)
         came_from = {node_obj: None for node_obj in self.graph.nodes.values()}
 
         # 3) Priority queue: Store (distance, node.name, node_obj) to allow sorting
-        pq = [(0, start_node.name, start_node)]  # (distance_so_far, tie-breaker, node_obj)
+        pq = [
+            (0, start_node.name, start_node)
+        ]  # (distance_so_far, tie-breaker, node_obj)
 
         while pq:
             current_dist, _, current_node = heapq.heappop(pq)
-            
+
             # If we've reached the goal node, we can stop
             if current_node == goal_node:
                 break
 
             if current_dist > distances[current_node]:
                 continue
-            
+
             # 4) Explore neighbors
             for neighbor_obj, edge_data in current_node.neighbors.items():
                 cost = edge_data["cost"]
@@ -36,7 +40,9 @@ class Navigation:
                 if new_dist < distances[neighbor_obj]:
                     distances[neighbor_obj] = new_dist
                     came_from[neighbor_obj] = (current_node, direction)
-                    heapq.heappush(pq, (new_dist, neighbor_obj.name, neighbor_obj))  # Store tuple with tie-breaker
+                    heapq.heappush(
+                        pq, (new_dist, neighbor_obj.name, neighbor_obj)
+                    )  # Store tuple with tie-breaker
 
         # 5) Reconstruct path of Node objects + directions
         node_path = []
@@ -52,7 +58,7 @@ class Navigation:
                 node = prev_node
             else:
                 node = None
-        
+
         # Reverse them, since we built from goal -> start
         node_path.reverse()
         dir_path.reverse()
@@ -61,7 +67,6 @@ class Navigation:
         node_path, dir_path = combine_paths(node_path, dir_path)
 
         return (distances[goal_node], node_path, dir_path)
-
 
 
 def combine_paths(node_path, direction_path):
@@ -78,8 +83,8 @@ def combine_paths(node_path, direction_path):
         # Only one node, no edges
         return node_path, node_path
     if not direction_path:
-        # Means we have nodes but no directions? 
-        # Possibly an error or trivial path of 1 node. 
+        # Means we have nodes but no directions?
+        # Possibly an error or trivial path of 1 node.
         return [], []
 
     # Start with the first node and first direction
@@ -112,14 +117,25 @@ def combine_paths(node_path, direction_path):
     # Reverse the lists to place the start node at the right
     merged_nodes.reverse()
     merged_directions.reverse()
-    return merged_nodes,merged_directions
+    return merged_nodes, merged_directions
+
 
 if __name__ == "__main__":
     nav = Navigation()
-    print(nav.dijkstra_with_directions(nav.graph.get_node("Start Node"), nav.graph.get_node("Depot 1")))
-    print(nav.dijkstra_with_directions(nav.graph.get_node("B"), nav.graph.get_node("Start Node")))
-    print(nav.dijkstra_with_directions(nav.graph.get_node("Depot 2"), nav.graph.get_node("D")))
+    print(
+        nav.dijkstra_with_directions(
+            nav.graph.get_node("Start Node"), nav.graph.get_node("Depot 1")
+        )
+    )
+    print(
+        nav.dijkstra_with_directions(
+            nav.graph.get_node("B"), nav.graph.get_node("Start Node")
+        )
+    )
+    print(
+        nav.dijkstra_with_directions(
+            nav.graph.get_node("Depot 2"), nav.graph.get_node("D")
+        )
+    )
 
 # Helper function to combine adjacent nodes that have the same direction of travel
-
-
