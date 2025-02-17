@@ -73,3 +73,20 @@ class DualMotor:
             self.left_pwm.duty_u16(left_duty)
             self.right_pwm.duty_u16(right_duty)
 
+    def turn_left_reverse(self, speed=70):
+        # Turn left by reducing or reversing the speed of the left motor
+        self.left_dir.value(0)  
+        self.right_dir.value(0)  
+        left_duty = int(65535 * speed / 100) 
+        right_duty = 0
+        self.left_pwm.duty_u16(left_duty)
+        self.right_pwm.duty_u16(right_duty)
+
+    def turn_right_reverse(self, speed=70):
+        # Turn right by reducing or reversing the speed of the right motor
+        self.left_dir.value(0)  
+        self.right_dir.value(0)  
+        left_duty = 0 
+        right_duty = int(65535 * speed / 100) 
+        self.left_pwm.duty_u16(left_duty)
+        self.right_pwm.duty_u16(right_duty) 

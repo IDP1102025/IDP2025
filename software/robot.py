@@ -141,7 +141,6 @@ class Robot :
         self.execute_pathing()
 
 #          Execute action at current node, either depot or goal
-        print(self.current_node.node_type)
         if self.current_node.name in ["Depot 1" , "Depot 2"]:
             self.depot(int(self.current_node.name[-1]))
         elif self.current_node.name in ["A","B","C","D"]:
@@ -231,8 +230,6 @@ class Robot :
                     
             # set new direction
             self.direction_facing = desired_direction
-        else:
-            print("Already facing the desired direction.")
         
     def move(self, number_of_junctions, time_to_run = 1):
         self.current_task = "moving"
@@ -289,13 +286,12 @@ class Robot :
     
     def reverse_to_junction(self):
         # Reverse until a junction is detected
+        self.dual_motors.move_backward(70)
+        sleep(0.5)
         while True:
-            self.dual_motors.move_backward(100)
+            self.dual_motors.move_backward(70)
             if self.corner_identification.find_turn(self.line_follower.state_pattern):
                 break
-        self.dual_motors.move_backward(100)
-        
-        sleep(0.5)
         # potential issue: the robot "finds a turn" because it strays from the line and outer sensors hit the line
         self.dual_motors.stop()
 
@@ -324,7 +320,6 @@ class Robot :
                 forwards = True
                 code = self.qr.poll_for_code(1.5)
             
-            
         print (code)
         qr_message = bytes(code).decode('utf-8')
         print(qr_message)
@@ -335,15 +330,16 @@ class Robot :
 #         next_node = self.navigation.graph.get_node("A")
 
         if next_node is None:
-            print("YOU FUCKED UP BRO THE QR CODE DIDNT SCAN")
+            print("no code")
         
     
         else:
-            while self.ultrasonic_sensor.detect_distance() > 25:
+            while self.ultrasonic_sensor.detect_distance() > 20:
                 print(self.ultrasonic_sensor.detect_distance())
                 self.move(0,0.01)
             
-            self.move(0,0.1)
+            self.stop()
+
             self.linear_actuator.retract(3)
             
             self.boxes_in_depot[depot_number] -= 1
@@ -355,36 +351,80 @@ class Robot :
 
             self.goto_node(next_node)
 
-        # TODO: Implement depot logic   
     
     # Block to perform at goal node
     def target_node(self,name):
         destination_dic = {'A': 1, 'B': 3, 'C': 4, 'D': 3}
         if name in destination_dic:
-            #face depot deposit zone
+            # Face depot deposit zone
             self.face_direction(destination_dic[name])
-            
-            #move to the edge of the depot
+            start_time = time()
+
+            # Fove to the edge of the depot
             self.move(1)
-            
+            elapsed_time = time() - start_time
+
             #move slightly further into drop zone
             self.dual_motors.move_forward(50,50)
             sleep(0.1)
             self.dual_motors.stop()
 
-            #drop the package
+            # drop the package
             self.linear_actuator.extend(3)
+            # reverse slightly
+            self.dual_motors.move_backward(50)
 
-            #reverse to the node
-            
-            self.reverse_to_junction()
-            self.reverse_to_junction()
-            
-
+            # Reverse the time taken to move to the edge of the drop zone
+            self.reverse(elapsed_time)
             #go to next location
             if self.boxes_in_depot[1] != 0:
+                next_directions = {'A': 2 ,'B': 2, 'C': 3, 'D': 2}
+                self.face_direction_reverse(next_directions[name])
+                self.move(0,0.2)
                 self.goto_node(self.navigation.graph.get_node("Depot 1"))
             elif self.boxes_in_depot[2] != 0:
+                next_directions = {'A': 4 ,'B': 4, 'C': 3, 'D': 4}
+                self.face_direction_reverse(next_directions[name])
+                self.move(0,0.2)
                 self.goto_node(self.navigation.graph.get_node("Depot 2"))
             else:
+                next_directions = {'A': 2 ,'B': 2, 'C': 3, 'D': 2}
+                self.face_direction_reverse(next_directions[name])
+                self.move(0,0.2)
                 self.return_to_start()
+
+    def face_direction_reverse(self, desired_direction):
+        '''
+        Turn the robot to face a specific direction in the reverse direction
+        Args:
+            desired_direction (int): Direction to face (1,2,3,4) = (Front, Right, Back, Left)
+
+        '''
+        # Add movement offset to account for wheel and sensor offset
+        
+        net_turn = desired_direction - self.direction_facing
+
+        if net_turn == 1 or net_turn == -3: # 90 degree turn right
+                sleep(0.2)
+                self.dual_motors.turn_right_reverse(100)
+                sleep(1)
+                while True:
+                    self.line_follower.scan_state_patterns()
+                    if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
+#                         print("[INFO] Detected inner sensors = 1. Stopping turn.")
+                        self.dual_motors.stop()
+                        break
+                    
+        elif net_turn == -1 or net_turn == 3: # 90 degree turn left
+            sleep(0.2)
+            self.dual_motors.turn_left_reverse(100)
+            sleep(1)
+            while True:
+                self.line_follower.scan_state_patterns()
+                if self.inner_right_sensor.read_sensor() == 1 and self.inner_left_sensor.read_sensor() == 1:
+#                         print("[INFO] Detected inner sensors = 1. Stopping turn.")
+                    self.dual_motors.stop()
+                    break
+                
+        # set new direction
+        self.direction_facing = desired_direction
