@@ -458,7 +458,7 @@ class Robot:
                     self.inner_right_sensor.read_sensor() == 1
                     and self.inner_left_sensor.read_sensor() == 1
                 ):
-                    #                         print("[INFO] Detected inner sensors = 1. Stopping turn.")
+                    # print("[INFO] Detected inner sensors = 1. Stopping turn.")
                     self.dual_motors.stop()
                     break
 
