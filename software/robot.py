@@ -1,4 +1,4 @@
-from machine import Pin, PWM
+from machine import Pin
 from controllers.motor_driver import DualMotor
 from controllers.linear_actuator_driver import LinearActuatorDriver
 from line_follow.follow_line import NotPidFollower

@@ -1,6 +1,4 @@
 from machine import Pin, PWM
-from time import sleep
-
 # Note: Check pins are set to the correct GPIO pins
 
 
@@ -76,7 +74,7 @@ class DualMotor:
         self.left_pwm.duty_u16(left_duty)
         self.right_pwm.duty_u16(right_duty)
 
-    def turn_left_reverse(self, speed=70):
+    def turn_left_reverse(self, speed=100):
         # Turn left by reducing or reversing the speed of the left motor
         self.left_dir.value(0)
         self.right_dir.value(0)

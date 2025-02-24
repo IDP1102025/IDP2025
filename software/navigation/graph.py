@@ -1,6 +1,4 @@
 from node import Node, StartNode, DepotNode, GoalNode, DummyNode
-
-
 class Graph:
     def __init__(self):
         """

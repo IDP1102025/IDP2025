@@ -1,6 +1,3 @@
-from sensors.sensor_manager import LineSensor
-
-
 class CornerIdentification:
     def __init__(
         self,

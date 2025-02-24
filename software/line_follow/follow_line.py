@@ -1,7 +1,3 @@
-from time import sleep
-from sensors.sensor_manager import LineSensor
-
-
 class NotPidFollower:
     def __init__(
         self,

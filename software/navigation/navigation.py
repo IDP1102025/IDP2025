@@ -1,7 +1,5 @@
-from graph import Graph, initialise_graph
+from graph import initialise_graph
 import heapq
-
-
 class Navigation:
     def __init__(self):
         self.graph = initialise_graph()
