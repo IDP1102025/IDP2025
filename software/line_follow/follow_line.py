@@ -15,6 +15,16 @@ class NotPidFollower:
         self.error_loop = 0
 
     def follow_the_line(self, current_left_speed, current_right_speed):
+        '''
+        This function is used to follow the line using the line sensors
+
+        Args:
+            current_left_speed: Current speed of the left motor
+            current_right_speed: Current speed of the right motor
+        Returns:
+            current_left_speed: Updated speed of the left motor
+            current_right_speed: Updated speed of the right motor
+        '''
         # 1) Read sensors
         outer_left_detect = self.outer_left_sensor.read_sensor()  # 0 or 1
         inner_left_detect = self.inner_left_sensor.read_sensor()
@@ -50,6 +60,9 @@ class NotPidFollower:
         return current_left_speed, current_right_speed
 
     def scan_state_patterns(self):
+        '''
+        Returns the current state of the IR sensors as a list
+        '''
         # 1) Read sensors
         outer_left_detect = self.outer_left_sensor.read_sensor()  # 0 or 1
         inner_left_detect = self.inner_left_sensor.read_sensor()

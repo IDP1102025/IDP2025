@@ -1,11 +1,25 @@
 from graph import initialise_graph
 import heapq
+
+
 class Navigation:
     def __init__(self):
         self.graph = initialise_graph()
 
     def dijkstra_with_directions(self, start_node, goal_node):
-        """Return (distance, node_path, dir_path)."""
+        """
+        Uses dijkstra's algorithm to find the shortest path between two nodes.
+
+        Args:
+            start_node: The starting node object.
+            goal_node: The goal node object.
+        Returns:
+            A tuple containing:
+            - The total cost of the path
+            - A list of Node objects representing the path
+            - A list of tuples containing (direction, junction_count) for each step
+
+        """
 
         # 1) Distances dict from Node obj -> c ost
         distances = {node_obj: float("inf") for node_obj in self.graph.nodes.values()}
@@ -135,5 +149,3 @@ if __name__ == "__main__":
             nav.graph.get_node("Depot 2"), nav.graph.get_node("D")
         )
     )
-
-# Helper function to combine adjacent nodes that have the same direction of travel

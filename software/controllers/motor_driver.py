@@ -1,5 +1,4 @@
 from machine import Pin, PWM
-# Note: Check pins are set to the correct GPIO pins
 
 
 class DualMotor:

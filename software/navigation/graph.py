@@ -1,4 +1,6 @@
 from node import Node, StartNode, DepotNode, GoalNode, DummyNode
+
+
 class Graph:
     def __init__(self):
         """
@@ -93,25 +95,6 @@ def initialise_graph():
     full_graph.add_edge("3", "6", 76, direction=1)
     full_graph.add_edge("4", "C", 37, direction=1)
     full_graph.add_edge("C", "7", 39, direction=1)
-
-    # adding secondary edges
-
-    # full_graph.add_edge("Start Node","Depot 2",102,direction=4,junction=2)
-    # full_graph.add_edge("A","Depot 1",137,direction=2)
-    # full_graph.add_edge("Depot 1","Depot 2",207,direction=4,junction=3)
-
-    # full_graph.add_edge("Depot 2","6",161,direction=1,junction=2)
-    # full_graph.add_edge("Depot 1","8",161,direction=1,junction=2)
-    # full_graph.add_edge("4","7",76,direction=1,junction=2)
-
-    # full_graph.add_edge("3","B",134,direction=2,junction=2)
-    # full_graph.add_edge("4","5",105,direction=2,junction=2)
-    # full_graph.add_edge("3","5",207,direction=2,junction=3)
-
-    # full_graph.add_edge("6","8",207,direction=2,junction=3)
-    # full_graph.add_edge("6","D",207,direction=2,junction=3)
-    # full_graph.add_edge("7","8",106,direction=2,junction=2)
-
     return full_graph
 
 

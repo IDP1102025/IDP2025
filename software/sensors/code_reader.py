@@ -34,7 +34,8 @@ class CodeReader:
     def read_data(self):
         """
         Reads data from the code reader using I2C.
-        :return: A tuple containing the length and message data, or None if there's an error
+        Returns:
+            The length and message if data is read successfully, or None if not.
         """
         try:
             # Read the data from the device
@@ -61,9 +62,10 @@ class CodeReader:
     def poll_for_code(self, timeout):
         """
         Polls the sensor for a code for a certain number of seconds.
-
-        :param timeout: Maximum number of seconds to poll for.
-        :return: Unpacked data if a code is found, or None if no code is found.
+        Args:
+            timeout: Maximum number of seconds to poll for.
+        Returns:
+            The code if found, or None if not found.
         """
         self.data = None  # Reset data
         start_time = time()

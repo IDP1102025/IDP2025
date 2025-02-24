@@ -12,27 +12,12 @@ from navigation.navigation import Navigation
 class Robot:
     def __init__(self):
         """
-        Inititalise all sensors, motors, linefollower class done
-        - 4 line sensors (inside PID class anyway)
-        - 1 dual motor driver done`
-        - 1 ultrasonic sensor done
-        - 1 qr code scanner done
-        - 1 linear actuator done
-        - 1 led done
-        - 1 push bottom (start/stop/reset) done
-        - initialise navigation and graph
+        Inititalise button, LED, all sensors, motors, linefollower class and navigation class
 
         Robot variables + states:
-        - Current task (idle,line following forward, reversing, turning left/right, picking up box, dropping box, scanning qr code)
         - Direction facing (Front, right, back, left) (represented as 1,2,3,4)
-        - Current position
-        - Next target position
-        - Goal position
-        - Time elapsed
-        - Current speed % (0-100)
         - Boxes in each depot (4,3,2,1,0)
-
-        robot path should be a list of tuples
+        - Current node
         """
         # Initialise LED and button
         self.led = Pin(16, Pin.OUT)
@@ -82,25 +67,15 @@ class Robot:
         self.robot_node_path = []  # list of node objects
         self.robot_direction_path = (
             []
-        )  # list of directions of travel and number of junctions to travel in that direction: (1,2) corresponds to (front, 2 junctions)
+        )  # list of directions of travel and number of junctions to travel in that direction: (1,2) corresponds to (North, 2 junctions)
 
         # Inititalise robot speeds
-        self.right_speed, self.left_speed = 70, 70
+        self.right_speed, self.left_speed = 100, 1 - 0
 
-        # Robot states
-        self._current_task = "idle"  # Use an underscore to define a private variable
-
-    @property
-    def current_task(self):
-        return self._current_task
-
-    # Sets the status of the LED if robot is not idle
-    @current_task.setter
-    def current_task(self, task):
-        self._current_task = task
-
-    # Starts the robot if the button is pressed - calls the self.start() code
     def robot_standby(self):
+        """
+        Waits for the button to be pressed before starting the robot
+        """
         while True:
             button_state = self.button.value()
             if button_state == 1:
@@ -111,6 +86,9 @@ class Robot:
         self.start()
 
     def start(self):
+        """'
+        Move out of the start box and start the loop
+        """
         # Check if the robot is at the start node
         self.dual_motors.move_forward(100, 100)
         sleep(1)
@@ -134,6 +112,7 @@ class Robot:
 
     def goto_node(self, target_node):
         """
+        Navigate to a specific node from the current node
         Args:
             target_node (Node): Node object to navigate to
         """
@@ -192,7 +171,7 @@ class Robot:
         Turn the robot to face a specific direction
         Args:
             desired_direction (int): Direction to face (1,2,3,4) = (Front, Right, Back, Left)
-
+            depot_number (int): Depot number (1,2) to determine which direction to turn to avoid colliding into walls
         """
         # Add movement offset to account for wheel and sensor offset
 
@@ -255,7 +234,13 @@ class Robot:
             self.direction_facing = desired_direction
 
     def move(self, number_of_junctions, time_to_run=1):
-        self.current_task = "moving"
+        """
+        Move the robot forward for a certain number of junctions, or for a certain amount of time
+
+        Args:
+            number_of_junctions (int): Number of junctions to move forward
+            time_to_run (float): Time to run in seconds (if the number_of_junctions = 0)
+        """
         detected_junctions = 0
         junction_active = False  # Indicates a junction is currently being counted
         no_junction_counter = 0  # Counts consecutive cycles with no junction
@@ -311,26 +296,27 @@ class Robot:
         self.dual_motors.stop()
 
     def reverse(self, seconds):
+        """
+        Reverse the robot for a certain amount of time
+
+        Args:
+            seconds (float): Time to reverse in seconds
+        """
         self.dual_motors.move_backward(100)
         sleep(seconds)
-        self.dual_motors.stop()
-
-    def reverse_to_junction(self):
-        # Reverse until a junction is detected
-        self.dual_motors.move_backward(70)
-        sleep(0.5)
-        while True:
-            self.dual_motors.move_backward(70)
-            if self.corner_identification.find_turn(self.line_follower.state_pattern):
-                break
-        # potential issue: the robot "finds a turn" because it strays from the line and outer sensors hit the line
         self.dual_motors.stop()
 
     def stop(self):
         self.dual_motors.stop()
 
-    # Block to perform at depot nodes
     def depot(self, depot_number):
+        """
+        Block to perform at depot node:
+        - Scan for QR code
+        - Parse next node from QR code data
+        - Pick up box
+        - Move to goal node
+        """
         backup_factor = 5 - self.boxes_in_depot[depot_number]
         # Face the direction of the depot (south)
         self.face_direction(3)
@@ -382,8 +368,12 @@ class Robot:
 
             self.goto_node(next_node)
 
-    # Block to perform at goal node
     def target_node(self, name):
+        """
+        Block to perform at goal node:
+        - Drop box
+        - Move to next depot or return to start
+        """
         destination_dic = {"A": 1, "B": 3, "C": 4, "D": 3}
         if name in destination_dic:
             # Face depot deposit zone
@@ -467,7 +457,12 @@ class Robot:
 
 
 def move_ultrasound(self, distance_to_stop):
+    """
+    Move the robot forward until the ultrasound sensor detects a certain distance
 
+    Args:
+        distance_to_stop (float): Distance to stop moving forward
+    """
     while self.ultrasonic_sensor.detect_distance() > distance_to_stop:
         # 1) Get the next step's speeds from your line follower
         self.left_speed, self.right_speed = self.line_follower.follow_the_line(
